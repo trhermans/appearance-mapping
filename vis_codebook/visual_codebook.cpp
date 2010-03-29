@@ -115,7 +115,12 @@ void VisualCodebook::loadCodebook(string path)
 
 vector<int> VisualCodebook::getCodewords(IplImage& img)
 {
-  vector<int> codewords;
+  vector<int> codewords(k_, 0);
+
+  // Get SURF descriptors from the image
+
+  // Match the descriptors to their centers
+
   return codewords;
 }
 
