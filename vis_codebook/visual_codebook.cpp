@@ -10,7 +10,8 @@ VisualCodebook::VisualCodebook(int k): k_(k)
 
 void VisualCodebook::constructCodebook(string img_path, int img_count)
 {
-  int num_size = 4;
+  int padding_size = 4;
+  vector<float*> raw_descriptors;
   for(int i = 1; i <= img_count; ++i)
   {
     IplImage* cur;
@@ -20,7 +21,7 @@ void VisualCodebook::constructCodebook(string img_path, int img_count)
     stringstream img_num;
     img_num << i;
     string img_num_str = img_num.str();
-    int num_zeros = num_size - img_num_str.size();
+    int num_zeros = padding_size - img_num_str.size();
     img_num_str.insert(0, num_zeros, '0');
 
     // Build the full path to the image
@@ -36,10 +37,53 @@ void VisualCodebook::constructCodebook(string img_path, int img_count)
     CvMemStorage* mem  = cvCreateMemStorage(0);
     CvSURFParams params = cvSURFParams(500,1);
 
-    cvExtractSURF(cur, NULL, &keys, &descriptors, mem, params);
+    cvExtractSURF(cur, 0, &keys, &descriptors, mem, params);
+
+    // Add the descriptors to the current set
+    CvSeqReader reader;
+    cvStartReadSeq(descriptors, &reader, 0);
+    for(int j = 0; j < descriptors->total; ++j)
+    {
+      const float * desc = (const float*)(reader.ptr);
+      float* desc_array;
+      desc_array = new float[128];
+      for(int k = 0; k < 128; ++k)
+      {
+         desc_array[k] = desc[k];
+      }
+      raw_descriptors.push_back(desc_array);
+    }
   }
 
   // Cluster the codewords
+
+  // Convert raw descriptors
+  CvMat* descriptors = cvCreateMat(raw_descriptors.size(), 128, CV_32FC1);
+  for(int i = 0; i < raw_descriptors.size(); ++i)
+  {
+    for(int j = 0; j < 128; ++j)
+    {
+      descriptors->data.fl[i*128 + j] = raw_descriptors[i][j];
+    }
+  }
+
+  CvMat* clusters = cvCreateMat(raw_descriptors.size(), 1, CV_32SC1);
+  cv_centers_ = cvCreateMat(k_, 128, CV_32FC1);
+
+  cout << "Clustering codewords" << endl;
+  cvKMeans2(descriptors, k_, clusters,
+            cvTermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 50, 1.0 ),
+            0, 0, 0, cv_centers_);
+
+  // Record centers in our format...
+
+  // Cleanup
+  cvReleaseMat(&descriptors);
+  cvReleaseMat(&clusters);
+  for (int i = 0; i < raw_descriptors.size(); ++i)
+  {
+    delete[] raw_descriptors[i];
+  }
 }
 
 void VisualCodebook::saveCodebook(string path)

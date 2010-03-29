@@ -15,5 +15,6 @@ class VisualCodebook
 
  protected:
   int k_;
-  std::vector<std::vector< int> > centers_;
+  std::vector<std::vector<float> > centers_;
+  CvMat* cv_centers_;
 };
