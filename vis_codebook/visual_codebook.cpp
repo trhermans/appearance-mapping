@@ -31,11 +31,12 @@ void VisualCodebook::constructCodebook(string img_path, int img_count)
     cur = cvLoadImage(image_name.str().c_str(), CV_8UC1);
 
     // Find the descriptors for the image and store them into memory
-    CvSeq** keys;
-    CvSeq** descriptors;
-    CvMemStorage* mem;
-    CvSURFParams params;
-    cvExtractSURF(cur, NULL, keys, descriptors, mem, params);
+    CvSeq* keys = 0;
+    CvSeq* descriptors = 0;
+    CvMemStorage* mem  = cvCreateMemStorage(0);
+    CvSURFParams params = cvSURFParams(500,1);
+
+    cvExtractSURF(cur, NULL, &keys, &descriptors, mem, params);
   }
 
   // Cluster the codewords
