@@ -75,7 +75,16 @@ void VisualCodebook::constructCodebook(string img_path, int img_count)
             cvTermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 50, 1.0 ),
             0, 0, 0, cv_centers_);
 
-  // Record centers in our format...
+  // Record centers in our format
+  for(int i = 0; i < k_; ++i)
+  {
+    vector<float> center;
+    for (int j = 0; j < 128; ++j)
+    {
+      center.push_back(cv_centers_->data.fl[i*128 + j]);
+    }
+    centers_.push_back(center);
+  }
 
   // Cleanup
   cvReleaseMat(&descriptors);
