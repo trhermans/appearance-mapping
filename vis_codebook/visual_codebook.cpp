@@ -94,7 +94,7 @@ void VisualCodebook::constructCodebook(string img_path, int img_count)
             cvTermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER,
                            kmeans_iter_, 1.0),
             0, 0, 0, cv_centers);
-
+  cout << "Re-recording centers as vector" << endl;
   // Record centers in our format
   for(int i = 0; i < k_; ++i)
   {
@@ -204,6 +204,7 @@ void VisualCodebook::saveCodebook(string path)
     }
     output_file << endl;
   }
+  output_file.close();
 }
 
 /**
@@ -230,6 +231,7 @@ void VisualCodebook::loadCodebook(string path)
       centers_.push_back(center);
     }
   }
+  input_file.close();
   // Set the number of clusters
   k_ = centers_.size();
 }
