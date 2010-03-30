@@ -6,6 +6,7 @@ C++-WARNS = -Wall
 C++-FLAGS = $(C++-WARNS) $(C++-OPT)
 #C++-FLAGS = $(C++-WARNS) $(C++-DEBUG)
 RM = rm -f
+MKDIR = mkdir -p
 
 PLATFORM =$(shell uname)
 ifeq ($(PLATFORM), Darwin)
@@ -50,13 +51,16 @@ default: $(EXECS)
 generate_codebook: $(OBJ_DIR)/generate_codebook.o
 	$(C++) $(C++-FLAGS) $(INCLUDE) $(LDLIBS) $(OBJ_DIR)/generate_codebook.o  $(OBJS) -o $@
 
-$(OBJ_DIR)/generate_codebook.o: $(GEN_CODEBOOK_SRCS) $(OBJS)
+$(OBJ_DIR)/generate_codebook.o: $(GEN_CODEBOOK_SRCS) $(OBJS) build_dir
 	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
 
-$(OBJ_DIR)/visual_codebook.o: $(VIS_CODEBOOK_SRCS)
+$(OBJ_DIR)/visual_codebook.o: $(VIS_CODEBOOK_SRCS) build_dir
 	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
 
-.Phony : clean
+.Phony : clean build_dir
+
+build_dir :
+	$(MKDIR) $(OBJ_DIR)
 
 clean :
 	$(RM) $(EXECS) $(OBJ_DIR)/*.o
