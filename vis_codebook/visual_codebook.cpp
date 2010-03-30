@@ -103,7 +103,7 @@ void VisualCodebook::saveCodebook(string path)
   {
     for(unsigned int j = 0; j < centers_[j].size(); j++)
     {
-      output_file << centers_[j][i] << " ";
+      output_file << centers_[i][j] << " ";
     }
     output_file << endl;
   }
@@ -111,11 +111,38 @@ void VisualCodebook::saveCodebook(string path)
 
 void VisualCodebook::loadCodebook(string path)
 {
+  fstream input_file;
+  input_file.open(path.c_str(), ios::in);
+  centers_.clear();
+  while( !input_file.eof() )
+  {
+    vector<float> center;
+    for (int i = 0; i < 128 && !input_file.eof() ; ++i)
+    {
+      float f;
+      input_file >> f;
+      center.push_back(f);
+    }
+    if ( !input_file.eof() )
+    {
+      centers_.push_back(center);
+    }
+  }
+
+  k_ = centers_.size();
+
+  // Build opencv version of centers data
 }
 
 vector<int> VisualCodebook::getCodewords(IplImage& img)
 {
   vector<int> codewords(k_, 0);
+
+  if (centers_.size() < 1)
+  {
+    cerr << "Have not loaded a codebook, can not get codewords" << endl;
+    return codewords;
+  }
 
   // Get SURF descriptors from the image
 
