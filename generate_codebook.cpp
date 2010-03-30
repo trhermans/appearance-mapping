@@ -1,9 +1,6 @@
 #include <string>
 #include <iostream>
 
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
 #include "visual_codebook.h"
 using namespace std;
 
@@ -37,11 +34,10 @@ int main(int argc, char** argv)
   }
 
   // Cluster the codewords
-  VisualCodebook vc(num_centers);
+  VisualCodebook vc(num_centers, true);
   vc.constructCodebook(img_path, num_images);
 
   // Write cluster centers to file
-
   vc.saveCodebook(cb_path);
 
   return 0;

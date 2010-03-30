@@ -33,6 +33,7 @@ OBJ_DIR = ./build
 
 # Source file listings
 GEN_CODEBOOK_SRCS = generate_codebook.cpp
+TEST_CODEBOOK_SRCS = test_codebook_read.cpp
 VIS_CODEBOOK_SRCS = vis_codebook/visual_codebook.cpp \
 		    vis_codebook/visual_codebook.h
 
@@ -40,7 +41,7 @@ VIS_CODEBOOK_SRCS = vis_codebook/visual_codebook.cpp \
 OBJS =  $(OBJ_DIR)/visual_codebook.o
 
 # List of executables
-EXECS = generate_codebook
+EXECS = generate_codebook test_codebook_read
 
 # Compilation rules
 default: $(EXECS)
@@ -50,6 +51,11 @@ default: $(EXECS)
 #
 generate_codebook: $(OBJ_DIR)/generate_codebook.o
 	$(C++) $(C++-FLAGS) $(INCLUDE) $(LDLIBS) $(OBJ_DIR)/generate_codebook.o  $(OBJS) -o $@
+test_codebook_read: $(OBJ_DIR)/test_codebook_read.o
+	$(C++) $(C++-FLAGS) $(INCLUDE) $(LDLIBS) $(OBJ_DIR)/test_codebook_read.o  $(OBJS) -o $@
+
+$(OBJ_DIR)/test_codebook_read.o: $(TEST_CODEBOOK_SRCS) $(OBJS) build_dir
+	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
 
 $(OBJ_DIR)/generate_codebook.o: $(GEN_CODEBOOK_SRCS) $(OBJS) build_dir
 	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
