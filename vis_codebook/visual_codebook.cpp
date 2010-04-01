@@ -147,7 +147,13 @@ vector<int> VisualCodebook::getCodewords(IplImage& img)
     CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
     int c = nearestCenter(desc);
     if (c >= 0)
+    {
       codewords[c] = 1;
+    }
+    else
+    {
+      cerr << "Found no nearest neighbor!" << endl;
+    }
   }
   cvReleaseMemStorage(&mem);
   return codewords;
@@ -168,10 +174,15 @@ const int VisualCodebook::nearestCenter(const float * desc)
   for(unsigned int i = 0; i < centers_.size(); ++i)
   {
     double score = 0;
-    for(int j = 0; j < desc_size_; ++j)
+    for(int j = 0; j < desc_size_; j += 4)
     {
-      double diff = centers_[i][j] - desc[j];
-      score += diff*diff;
+      double diff0 = centers_[i][j] - desc[j];
+      double diff1 = centers_[i][j+1] - desc[j+1];
+      double diff2 = centers_[i][j+2] - desc[j+2];
+      double diff3 = centers_[i][j+3] - desc[j+3];
+      score += diff0*diff0 + diff1*diff1 + diff2*diff2 + diff3*diff3;
+      if(score > best_score)
+        break;
     }
     if (score < best_score)
     {
@@ -198,9 +209,11 @@ void VisualCodebook::saveCodebook(string path)
   output_file.open(path.c_str(), ios::out);
   for(unsigned int i = 0; i < centers_.size(); i++)
   {
-    for(unsigned int j = 0; j < centers_[j].size(); j++)
+    for(int j = 0; j < desc_size_; j++)
     {
-      output_file << centers_[i][j] << " ";
+      output_file << centers_[i][j];
+      if (j < desc_size_ -1)
+        output_file << " ";
     }
     output_file << endl;
   }

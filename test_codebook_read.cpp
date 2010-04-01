@@ -45,10 +45,12 @@ int main(int argc, char** argv)
 
     for (unsigned int j = 0; j < feat.size(); ++j)
     {
-      dist[j] += feat[j];
+      if (feat[j] > 0)
+        dist[j] += feat[j];
     }
   }
 
+  cout << "Writing to disk" << endl;
   string save_path = "./word_dist.txt";
   fstream dist_file;
   dist_file.open(save_path.c_str(), ios::out);
