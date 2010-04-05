@@ -29,6 +29,7 @@ public:
 	// numberOfSamples is the number of samples for the unknown place during the calculation of the normalization term (n_s in the paper in equation (17) in chapter 4.3.2)
 	// approximationModel is one of the elements in enum ObservationLikelihoodModel
 	// falsePositiveProbability, falseNegativeProbability - the detector model probabilities (see detector model)
+	// codebookFile is the file containing the codebook
 	// trainingDataFile is the file name of the file with training data (vector<vector<int>>), if this parameter is "" you must provide a modelFile
 	// modelFile - if the model was already generated, it can be loaded from a model file
 	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile="");

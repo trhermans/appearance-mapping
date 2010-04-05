@@ -11,9 +11,9 @@
 
 int main()
 {
-	// train a new model
-	FABMAP fm(1.0, 20, FABMAP::CHOWLIU, 0.0, 0.39, "fabmap.codebook", "training_data.txt", "ChowLiuTree.txt");
-	// or load an existing model from file
+	// train a new model (parameter infos in FABMAP.h)
+	FABMAP fm(1.0, 20, FABMAP::CHOWLIU, 0.0, 0.39, "fabmap.codebook", "training_data.txt");
+	// or load an existing model from file (if the first option was run once before)
 	//FABMAP fm(1.0, 20, FABMAP::CHOWLIU, 0.0, 0.39, "fabmap.codebook", "training_data.txt", "ChowLiuTree.txt");  //0.99999999999999999999
 
 	fm.onlineApplication("../../../data/CityCentre_Images/Images/", 200);		//"../../../data/NewCollege_Images/Images/"
