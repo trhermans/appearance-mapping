@@ -14,7 +14,7 @@ NormalizationTermSampling::~NormalizationTermSampling()
 }
 
 
-double NormalizationTermSampling::getNormalizationTerm(std::vector<double> p_Zk_Li, InterfaceObservationLikelihood* observationLikelihood, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel, InterfaceLocationPrior* locationPrior)
+double NormalizationTermSampling::getNormalizationTerm(std::vector<double> p_Zk_Li, double& p_Zk_Lu, InterfaceObservationLikelihood* observationLikelihood, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel, InterfaceLocationPrior* locationPrior)
 {
 	double normalizationTerm = 0.0;
 
@@ -30,7 +30,8 @@ double NormalizationTermSampling::getNormalizationTerm(std::vector<double> p_Zk_
 	{
 		sum += observationLikelihood->sampleNewPlaceObservation(detectorModel);
 	}
-	normalizationTerm += locationPrior->getLocationPrior((int)p_Zk_Li.size(), placeModel) * sum/mNumberOfSamples;
+	normalizationTerm += locationPrior->getLocationPrior((int)p_Zk_Li.size(), placeModel) * sum/(double)mNumberOfSamples;
+	p_Zk_Lu = sum/(double)mNumberOfSamples;
 
 	return normalizationTerm;
 }

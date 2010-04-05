@@ -5,6 +5,7 @@
 #define FABMAP_H_
 
 #include <vector>
+#include <fstream>
 #include "InterfaceObservationLikelihood.h"
 #include "ChowLiuTree.h"
 #include "NaiveBayes.h"
@@ -14,6 +15,11 @@
 #include "InterfaceLocationPrior.h"
 #include "NormalizationTermSampling.h"
 #include "SimpleLocationPrior.h"
+#include "DetectorModel.h"
+#include "PlaceModel.h"
+#include "../vis_codebook/visual_codebook.h"
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
 
 class FABMAP
 {
@@ -22,21 +28,25 @@ public:
 	// sigma is the smoothing factor (see equation (18))
 	// numberOfSamples is the number of samples for the unknown place during the calculation of the normalization term (n_s in the paper in equation (17) in chapter 4.3.2)
 	// approximationModel is one of the elements in enum ObservationLikelihoodModel
-	FABMAP(double sigma, int numberOfSamples, int approximationModel, std::string modelFile="");
+	// falsePositiveProbability, falseNegativeProbability - the detector model probabilities (see detector model)
+	// trainingDataFile is the file name of the file with training data (vector<vector<int>>), if this parameter is "" you must provide a modelFile
+	// modelFile - if the model was already generated, it can be loaded from a model file
+	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile="");
 
 	~FABMAP();
 
 	// does probabilistic localization and mapping in the space of appearance with the provided data
-	void onlineApplication();
+	// imagePath is the path where the images can be found, e.g. "../../data/images/"
+	void onlineApplication(std::string imagePath, int numberOfImages);
 
 	enum ObservationLikelihoodModel {NAIVEBAYES, CHOWLIU};
 
 private:
 	// accomplishes all the offline learning (starts from image files) which is necessary before the algorithm can be applied
-	void offlinePreparation(int approximationModel);
+	void offlinePreparationTrain(int approximationModel, std::string trainingDataFile);
 
 	// loads existing offline-learned models from file which is necessary before the algorithm can be applied
-	void offlinePreparation(int approximationModel, std::string modelFile);
+	void offlinePreparationLoad(int approximationModel, std::string modelFile);
 
 	// the smoothing factor applied in equation (18)
 	double mSigma;
@@ -46,6 +56,7 @@ private:
 	InterfacePlaceModel* mPlaceModel;
 	InterfaceNormalizationTerm* mNormalizationTerm;
 	InterfaceLocationPrior* mLocationPrior;
+	VisualCodebook mVisualCodebook;
 };
 
 #endif /* FABMAP_H_ */

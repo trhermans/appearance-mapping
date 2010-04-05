@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 
-#include "visual_codebook.h"
+#include "vis_codebook/visual_codebook.h"
 using namespace std;
 
 #define MIN_CODEBOOK_ARGS 4

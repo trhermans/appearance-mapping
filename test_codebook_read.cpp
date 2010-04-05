@@ -5,7 +5,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 
-#include "visual_codebook.h"
+#include "vis_codebook/visual_codebook.h"
 using namespace std;
 
 int main(int argc, char** argv)
@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 
   // Build distribution
   vector<long> dist(k, 0);
+  vector<vector<int> > training_data;
   int padding_size = 4;
   for (int i = 1; i <= img_count; ++i)
   {
@@ -42,6 +43,7 @@ int main(int argc, char** argv)
     cout << image_name.str() << endl;
     vector<int> feat;
     feat = vc.getCodewords(*img);
+	training_data.push_back(feat);
 
     for (unsigned int j = 0; j < feat.size(); ++j)
     {
@@ -57,6 +59,19 @@ int main(int argc, char** argv)
   for (unsigned int i = 0; i < dist.size(); ++i)
   {
     dist_file << dist[i] << " ";
+  }
+  dist_file.close();
+
+  save_path = "./training_data.txt";
+  dist_file.open(save_path.c_str(), ios::out);
+  dist_file << training_data.size() << " " << training_data[0].size() << endl;;
+  for (unsigned int i = 0; i < training_data.size(); ++i)
+  {
+    for (unsigned int j = 0; j < training_data[i].size(); ++j)
+    {
+      dist_file << training_data[i][j] << " ";
+    }
+	dist_file << endl;
   }
   dist_file.close();
   return 0;

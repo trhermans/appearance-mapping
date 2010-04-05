@@ -17,6 +17,11 @@ SimpleLocationPrior::~SimpleLocationPrior()
 double SimpleLocationPrior::getLocationPrior(int location, InterfacePlaceModel* placeModel)
 {
 	int lastLocation = placeModel->getLastLocation();
+	// initialization case
+	if (lastLocation == -1)
+	{
+		return 1.0;
+	}
 	int numberOfLocations = placeModel->getNumberOfLocations();
 	int numberOfAdjancentLocations = (int)placeModel->getAdjacentLocations(lastLocation).size();
 

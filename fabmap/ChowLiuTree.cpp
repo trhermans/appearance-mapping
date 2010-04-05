@@ -376,6 +376,7 @@ double ChowLiuTree::evaluate(std::vector<int> observations, int location, Interf
 	{
 		p_zr_Li += detectorModel->getDetectorProbability(observations[0], s) * placeModel->getWordProbability(0, s, location);	// equation (8)
 	}
+	if (p_zr_Li>1.0) std::cout << "ChowLiuTree::evaluate: p_zr_Li > 1\n";
 	p_Zk_Li *= p_zr_Li;
 
 	for (unsigned int attr=1; attr<mAttributeSizes.size(); attr++)
@@ -393,6 +394,7 @@ double ChowLiuTree::evaluate(std::vector<int> observations, int location, Interf
 
 			p_zq_zpq_Li += p_zq_eq_zpq * placeModel->getWordProbability(attr, s, location);	// equation (11)
 		}
+		if (p_zq_zpq_Li>1.0) std::cout << "ChowLiuTree::evaluate: p_zq_zpq_Li > 1\n";
 
 		p_Zk_Li *= p_zq_zpq_Li;
 	}
@@ -427,7 +429,7 @@ double ChowLiuTree::sampleNewPlaceObservation(InterfaceDetectorModel* detectorMo
 		for (int attr=1; attr<(int)mAttributeSizes.size(); attr++)
 		{
 			// sample if parent attribute is already set
-			if (observation[mParentIndex[attr]] != -1)
+			if ((observation[mParentIndex[attr]] != -1) && (observation[attr]==-1))
 			{
 				value = -1;
 				do
