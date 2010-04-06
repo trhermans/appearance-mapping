@@ -5,6 +5,7 @@
 #define INTERFACEOBSERVATIONLIKELIHOOD_H_
 
 #include <vector>
+#include <string>
 #include "InterfaceDetectorModel.h"
 #include "InterfacePlaceModel.h"
 

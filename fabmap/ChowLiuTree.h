@@ -7,6 +7,7 @@
 #define CHOWLIUTREE_H_
 #include <map>
 #include <limits>
+#include <cfloat>
 #include <iostream>
 #include <fstream>
 #include <ctime>
@@ -25,16 +26,16 @@ public :
 	~ChowLiuTree();
 
 	// returns p(Z_k | L_i) as defined in equations (9)-(14) for the Chow Liu trees, i=location, Z_k=observations
-	double evaluate(std::vector<int> observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel);
+	virtual double evaluate(std::vector<int> observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel);
 
 	// returns the marginal probability for observing a single attribute p(z_attr = val)
-	double getMarginalPriorProbability(int attr, int val);
+	virtual double getMarginalPriorProbability(int attr, int val);
 
 	// returns the whole marginal probabilities vector
-	std::vector<std::vector<double> >& getMarginalPriorProbabilities() { return mMarginalPriorProbability; };
+	virtual std::vector<std::vector<double> >& getMarginalPriorProbabilities() { return mMarginalPriorProbability; };
 
 	// returns p(Z_k | L_u) for a randomly sampled place L_u with randomly sampled obervations Z_k as needed in equation (17)
-	double sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel);
+	virtual double sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel);
 
 private:
 	std::vector< std::vector<double> > calculateMutualInformation();
