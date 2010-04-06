@@ -1,6 +1,7 @@
 // author: David
 
 #include "NaiveBayes.h"
+#include <stdlib.h>
 
 NaiveBayes::NaiveBayes(std::vector<std::vector<int> > training_data)
 : InterfaceObservationLikelihood(training_data)
