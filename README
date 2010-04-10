@@ -3,6 +3,11 @@ Appearance based mapping for CS 7641 and CS 8803-3D
 
 Usage:
 
+NEW:
+1. generate feature vectors for all images using the libHIK/build_codebook program
+2. start the fabmap algorithm using the FabmapMain program
+
+OLD:
 1. generate a bag-of-words codebook with the generate_codebook program
 2. generate training data with respect to the generated codebook with the test_codebook_read program
 3. start the fabmap algorithm using the FabmapMain program

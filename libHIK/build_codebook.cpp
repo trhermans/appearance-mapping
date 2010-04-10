@@ -24,8 +24,8 @@ using namespace std;
 void usage()
 {
   cout<<"Usage: build_codebook path/to/training_images/ "
-           << " num_training_images path/to/testing_images/ num_testing_images "
-           << "K descriptor codebook path/to/features" << endl;
+           << "num_training_images path/to/testing_images/ num_testing_images "
+           << "K descriptor codebook output_path" << endl;
   cout<<" descriptor: CENTRIST | SIFT"<<endl;
   cout<<" codebook: HIK | kmeans | kmedian"<<endl;
 }
