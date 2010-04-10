@@ -162,6 +162,136 @@ void CodeBook::TranslateOneImage(const char* filename,
     }
 }
 
+void CodeBook::TranslateOneHarrisImage(const char* filename,
+                                       const int stepSize,const int splitlevel,
+                                       double* p,const int fsize,
+                                       const bool normalize,
+                                       const double ratio,
+                                       int scales, bool useBinary) const
+{
+  // we could put 'feature' as a member of the CodeBook class. However,
+  // put it here makes parallel processing (OpenMP) possible
+
+  // generate the right feature extractor
+  BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
+
+  // ratio to shrink the image to a smaller scale & weights at different
+  // scaled version of the image
+  const double scale_change = 0.75;
+  // weight of codewords generated in different resized version of the image
+  double scale = 1;
+
+  // assign an image to the feature extractor
+  const IntImage<double>* img = &feature->AssignFile(filename,resizeWidth);
+  std::fill(p,p+fsize,0.0);
+  // Extract keypoints from the image
+  IplImage* cv_img = cvLoadImage(filename);
+  IplImage* corner_img = cvCreateImage(cvSize(cv_img->width, cv_img->height),
+                                       IPL_DEPTH_32F,1);;
+  cvCornerHarris(cv_img, corner_img, windowSize);
+
+  // Currently we create a corner at any point greater than 12.5% of the max
+  const float threshold = 0.125;
+  vector<CvPoint> corners;
+
+  // Threshold the image to find the corners
+  for (int y = 0; y < corner_img->height; y++) {
+    for (int x = 0; x < corner_img->width; x++) {
+      const float val = cvGet2D(corner_img, y, x).val[0];
+      if ( val > threshold) {
+
+        // Test if maximal over the 3 by 3 window
+        bool hasLeft = x > 0;
+        bool hasRight = x < corner_img->width - 1;
+        bool hasAbove = y > 0;
+        bool hasBelow = y < corner_img->height - 1;
+
+        if (hasLeft) {
+          if (val < cvGet2D(corner_img, y, x -1).val[0]) {
+            continue;
+          }
+          if (hasAbove &&
+              val < cvGet2D(corner_img, y - 1, x -1).val[0]) {
+            continue;
+          }
+          if (hasBelow &&
+              val < cvGet2D(corner_img, y + 1, x -1).val[0]) {
+            continue;
+          }
+        }
+        if (hasRight) {
+          if (val < cvGet2D(corner_img, y, x + 1).val[0]) {
+            continue;
+          }
+
+          if (hasAbove &&
+              val < cvGet2D(corner_img, y - 1, x + 1).val[0]) {
+            continue;
+          }
+          if (hasBelow &&
+              val < cvGet2D(corner_img, y + 1, x + 1).val[0]) {
+            continue;
+          }
+        }
+
+        if (hasAbove &&
+            val < cvGet2D(corner_img, y - 1, x).val[0]) {
+          continue;
+        }
+        if (hasBelow &&
+            val < cvGet2D(corner_img, y + 1, x).val[0]) {
+          continue;
+        }
+
+        CvPoint p;
+        p.x = x;
+        p.y = y;
+        corners.push_back(p);
+      }
+    }
+  }
+  cvReleaseImage(&corner_img);
+
+  // Get the descriptors for these keypoints
+  for(unsigned int i = 0; i < corners.size(); i++)
+  {
+    int x1 = corners[i].x - windowSize / 2;
+    int x2 = corners[i].x + windowSize / 2;
+    int y1 = corners[i].y - windowSize / 2;
+    int y2 = corners[i].y + windowSize / 2;
+    // find the right codeword
+    int match = Find_Nearest(x1, x2, y1, y2,feature);
+    // NOTE:special case -- this image patch is nearly uniform
+    if(match<0) continue;
+    if (useBinary)
+      p[match] = 1;
+    else
+      p[match]+=scale; // depth 0 of the hierarchy
+  }
+    delete feature; feature = NULL;
+    cvReleaseImage(&cv_img);
+
+    if(normalize) Normalize_L1(p,validcenters);
+    // normalize if necessary, and weight the codewords differently depending on
+    // depth in the hierarchy
+    if(splitlevel>=1)
+    {
+      if(normalize) for(int j=0;j<5;j++) Normalize_L1(p+validcenters+
+                                                      validcenters*j,
+                                                      validcenters);
+      for(int j=0;j<5*validcenters;j++) p[validcenters+j] *= ratio;
+    }
+    if(splitlevel>=2)
+    {
+      if(normalize) for(int j=0;j<25;j++) Normalize_L1(p+validcenters+
+                                                       validcenters*5+
+                                                       validcenters*j,
+                                                       validcenters);
+      for(int j=0;j<25*validcenters;j++) p[validcenters+validcenters*5+j] *=
+                                               (ratio*ratio);
+    }
+}
+
 IplImage* CodeBook::TranslateOneImage(const char* filename,const int K) const
 {
     CvScalar* colors = new CvScalar[K];

@@ -62,8 +62,16 @@ class CodeBook
   // image dense sampling step size is 'stepSize', patches are sampled at 'scales' number of resized version of the image
   // histograms of codewords from different depth of the hierarchy is weighted differently specified by 'ratio'
   // the histogram of codewords is normalize to unit L1 norm if 'normalize'=true
-  virtual void TranslateOneImage(const char* filename,const int stepSize,const int splitlevel,double* p,
-                                 const int fsize,const bool normalize,const double ratio,int scales, bool useBinary=false) const;
+  virtual void TranslateOneImage(const char* filename,const int stepSize,
+                                 const int splitlevel,double* p,
+                                 const int fsize,const bool normalize,
+                                 const double ratio,int scales,
+                                 bool useBinary=false) const;
+  virtual void TranslateOneHarrisImage(const char* filename,const int stepSize,
+                                       const int splitlevel,double* p,
+                                       const int fsize,const bool normalize,
+                                       const double ratio,int scales,
+                                       bool useBinary=false) const;
   // Translate an image into its an image, where a color corresponds to a visual code word
   IplImage* TranslateOneImage(const char* filename,const int K) const;
   // with an image already assigned to 'feature', find the right codeword for patch [x1..x2)X[y1..y2)

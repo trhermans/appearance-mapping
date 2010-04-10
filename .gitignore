@@ -4,3 +4,5 @@ generate_codebook
 /after_output
 /fabmap_exec
 /libHIK/.deps
+/libHIK/build_codebook
+/libHIK/transform
