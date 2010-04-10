@@ -1,0 +1,8 @@
+date
+rm -f r?.txt
+python train_test.py ../train1.txt.int ../test1.txt.int > r1.txt &
+python train_test.py ../train2.txt.int ../test2.txt.int > r2.txt &
+python train_test.py ../train3.txt.int ../test3.txt.int > r3.txt &
+python train_test.py ../train4.txt.int ../test4.txt.int > r4.txt &
+python train_test.py ../train5.txt.int ../test5.txt.int > r5.txt
+date

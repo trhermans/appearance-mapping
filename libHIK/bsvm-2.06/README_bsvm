@@ -1,0 +1,107 @@
+BSVM:
+
+*****************************************************************
+
+           COPYRIGHT NOTIFICATION
+
+BSVM can be freely used for research purpose.
+Use for commercial purposes is expressly prohibited
+without contacting the authors.
+BSVM is provided "as is" without express or implied warranty.
+
+Chih-Wei Hsu and Chih-Jen Lin
+Department of Computer Science and
+Information Engineering
+National Taiwan University 
+Taipei 106, Taiwan
+e-mail: cjlin@csie.ntu.edu.tw
+
+*****************************************************************
+
+           INSTRUCTIONS
+          
+1. Create the bsvm directory structure with
+
+        unzip bsvm.zip
+
+   This produces the directory bsvm and several subdirectories.
+
+2. On Unix systems, type `make' to build the `bsvm-train' and `bsvm-predict'
+   programs. On other systems, consult `Makefile' to build them or use the
+   pre-built binaries (Windows binaries are in the subdirectory `Windows').
+
+3. Find options of bsvm
+	
+	bsvm-train 
+
+4. Run the sample problems by executing bsvm. A model 
+   file is generated
+
+	bsvm-train -t 2 -c 1000  vehicle.scale vehicle_model
+
+5. Test the classifier
+
+	bsvm-predict vehicle.scale vehicle_model classified_result
+ 
+   test data: vehicle.scale (a 4-class classification problem)
+   support vectors: vehicle_model
+   classified_result: results after classification 
+
+*****************************************************************
+
+           FILE FORMATS and PARAMETERS
+
+The format of training and testing data file is:
+
+<label> <index1>:<value1> <index2>:<value2> ...
+.
+.
+.
+
+<label> is the target value of the training data. For classification,
+it should be an integer which identifies a class (multi-class classification
+is supported). For regression, it's any real number. <index> is an integer starting from 1, <value> is
+a real number. The labels in the testing data file are only used to
+calculate accuracy. If they are unknown, just fill this column with a number.
+
+The new release of BSVM borrows the structure of libsvm
+(http://www.csie.ntu.edu.tw/~cjlin/libsvm). Similar options are also adopted.
+
+Type bsvm-train to know the usage of bsvm:
+
+For more explanation of these options, please check the README of libsvm.
+The main difference from libsvm is -s and -q.
+  -s 0: bound-constrained multi-class support vector classification (SVC)
+  -s 1: multi-class SVC from solving a bound-constrained problem
+  -s 2: multi-class SVC from Crammer and Singer
+  -s 3: bound-constrained support vector regression
+The option -q gives the size of sub-problems for -s 0, 1, and 3.
+The size of sub-problems using -s 2 is always the number of classes.
+Note that -v now stands for cross validataion. In BSVM 1.1, -v is
+the verbosity.
+
+*****************************************************************
+
+           ADDITIONAL INFORMATION
+
+Chih-Wei Hsu and Chih-Jen Lin
+1. A simple decomposition method for support vector machines
+http://www.csie.ntu.edu.tw/~cjlin/papers/decomp.ps.gz
+2. A comparison on methods for multi-class support vector machines.
+http://www.csie.ntu.edu.tw/~cjlin/papers/multisvm.ps.gz
+3. Decomposition Methods for Linear Support Vector Machines
+http://www.csie.ntu.edu.tw/~cjlin/papers/linear.pdf
+
+Acknowledgments:
+The authors thank Chih-Chung Chang
+for many helpful disussions and comments.
+Part of the software implementation
+also benifited from his help.
+
+
+BSVM uses the opmization solver TRON
+by Chih-Jen Lin and Jorge More'.
+Please read the COPYRIGHT NOTIFICATION
+before using it.
+The TRON homepage is in 
+http://www.mcs.anl.gov/~more/tron
