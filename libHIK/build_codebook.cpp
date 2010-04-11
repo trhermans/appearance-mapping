@@ -25,7 +25,7 @@ void usage()
 {
   cout<<"Usage: build_codebook path/to/training_images/ "
            << "num_training_images path/to/testing_images/ num_testing_images "
-           << "K descriptor codebook output_path use_harris" << endl;
+           << "K descriptor codebook train_output_path test_output_path use_harris" << endl;
   cout<<" descriptor: CENTRIST | SIFT"<<endl;
   cout<<" codebook: HIK | kmeans | kmedian"<<endl;
   cout<<" use_harris: 0 | 1"<<endl;
@@ -109,7 +109,7 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
 
 int main(int argc, char** argv)
 {
-  if (argc != 10)
+  if (argc != 11)
   {
     usage();
     return -1;
@@ -122,8 +122,9 @@ int main(int argc, char** argv)
 
   const CodeBook::DESCRIPTOR_TYPE feature_type = FindDescriptor(argv[6]);
   const CodeBook::CODEBOOK_TYPE codebook_type = FindCodeBook(argv[7]);
-  string out_path(argv[8]);
-  bool use_harris = atoi(argv[9]);
+  string train_out_path(argv[8]);
+  string test_out_path(argv[9]);
+  bool use_harris = atoi(argv[10]);
 
   int scaleChanges = 0; // We will densley compute the featuers at a single scale
   int stepSize = 8;
@@ -151,6 +152,52 @@ int main(int argc, char** argv)
   CodeBook * codebook = CodeBookEngine(codebook_type, feature_type, K, useSobel,
                                        one_class_SVM, fsize);
 
+  // Build the feature vectors for the train images
+  cout<<"Now generating feature vectors for training data."<<endl;
+  Array2d<double> train_data;
+  train_data.Create(num_train_images, fsize);
+  StartOfDuration();
+#pragma omp parallel for
+  for(int i=1; i <= num_train_images;i++) {
+    // Create a zero padded list
+    stringstream img_num;
+    stringstream image_name;
+    img_num << i;
+    string img_num_str = img_num.str();
+    int num_zeros = padding_size - img_num_str.size();
+    img_num_str.insert(0, num_zeros, '0');
+    // Build the full path to the image
+    image_name << train_img_path << img_num_str << ".jpg";
+    cout << image_name.str() << endl;
+    if (use_harris)
+      codebook->TranslateOneHarrisImage(image_name.str().c_str(),
+                                        stepSize, splitlevel, train_data.p[i-1],
+                                        fsize, normalize, ratio, scaleChanges,
+                                        true);
+    codebook->TranslateOneImage(image_name.str().c_str(),
+                                stepSize, splitlevel, train_data.p[i-1],
+                                fsize, normalize, ratio, scaleChanges, true);
+    if(omp_get_thread_num()==0 && i%10==0) {
+      cout<<".";
+    }
+    cout.flush();
+  }
+
+  cout << endl;
+  cout << "Generated in "<< EndOfDuration()/1000 << " seconds."
+       << endl;
+  cout << "--------------------------------------------------------------------------"
+       << endl;
+
+    // Now write this stuff to disk
+  ofstream train_out(train_out_path.c_str());
+  for(int i = 0; i < train_data.nrow; i++)
+  {
+    for(int j = 0; j < train_data.ncol; j++)
+      train_out << train_data.p[i][j] << " ";
+    train_out << endl;
+  }
+  train_data.Clear();
   // Build the feature vectors for the test images
   cout<<"Now generating feature vectors for testing data."<<endl;
   Array2d<double> test_data;
@@ -189,13 +236,13 @@ int main(int argc, char** argv)
        << endl;
 
   // Now write this stuff to disk
-  ofstream out(out_path.c_str());
+  ofstream test_out(test_out_path.c_str());
   for(int i = 0; i < test_data.nrow; i++)
   {
     for(int j = 0; j < test_data.ncol; j++)
-      out << test_data.p[i][j] << " ";
-    out << endl;
+      test_out << test_data.p[i][j] << " ";
+    test_out << endl;
   }
-
+  test_data.Clear();
   return 0;
 }
