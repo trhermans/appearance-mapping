@@ -12,7 +12,9 @@ FABMAP::FABMAP(double sigma, int numberOfSamples, int approximationModel, double
 	mPlaceModel = new PlaceModel;
 	mNormalizationTerm = new NormalizationTermSampling(numberOfSamples);
 	mLocationPrior = new SimpleLocationPrior;
+	std::cout << "1";
 	mVisualCodebook.loadCodebook(codebookFile);
+	std::cout << "2";
 }
 
 FABMAP::~FABMAP()

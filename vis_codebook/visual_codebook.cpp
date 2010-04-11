@@ -297,7 +297,9 @@ void VisualCodebook::loadCodebook(string path)
       float f;
       input_file >> f;
       center.push_back(f);
+	  std::cout << f << "\t";
     }
+	std::cout << "\n";
     if ( !input_file.eof() )
     {
       centers_.push_back(center);

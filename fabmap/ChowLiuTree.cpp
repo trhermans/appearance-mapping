@@ -204,10 +204,10 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
 		// first-order dependent probabilities
-		std::vector<std::vector<float> > temp2;
+		std::vector<std::vector<double> > temp2;
 		for (int a=0; a<mAttributeSizes[attr]; a++)
 		{
-			std::vector<float> temp;
+			std::vector<double> temp;
 			temp.resize(mAttributeSizes[mParentIndex[attr]], 0.1f);
 			//for (int b=0; b<mAttributeSizes[mParentIndex[attr]]; b++)
 			//{
@@ -226,7 +226,6 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	mProbabilityModel[0][1][0] = 0.0;
 
 	// count occurences in training data
-	std::cout << "count";
 	for (unsigned int sample=0; sample<mTrainingData.size(); sample++)
 	{
 		for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
@@ -237,7 +236,6 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	}
 
 	// normalize probabilities
-	std::cout << "normalize";
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
 		// first-order dependent probabilities
@@ -344,14 +342,14 @@ void ChowLiuTree::loadModel(std::string filename)
 	double prob = 0.0;
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
-		std::vector<std::vector<float> > temp2;
+		std::vector<std::vector<double> > temp2;
 		for (int a=0; a<mAttributeSizes[attr]; a++)
 		{
-			std::vector<float> temp;
+			std::vector<double> temp;
 			for (int b=0; b<mAttributeSizes[mParentIndex[attr]]; b++)
 			{
 				in >> prob;
-				temp.push_back((float)prob);
+				temp.push_back(prob);
 			}
 			temp2.push_back(temp);
 		}

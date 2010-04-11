@@ -63,7 +63,7 @@ private:
 	std::vector<int> mParentIndex;
 
 	// stores the ChowLiu approximation probabilities mProbabilityModel[attr][a][b] stands for p( attr=a | parent(attr)=b )
-	std::vector<std::vector<std::vector<float> > > mProbabilityModel;
+	std::vector<std::vector<std::vector<double> > > mProbabilityModel;
 
 	// stores the marginal probability for observing a single attribute p(z_attr = val) as mMarginalPriorProbability[attr][val]
 	std::vector<std::vector<double> > mMarginalPriorProbability;
