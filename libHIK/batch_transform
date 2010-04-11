@@ -1,0 +1,5 @@
+./transform train1.txt test1.txt
+./transform train2.txt test2.txt
+./transform train3.txt test3.txt
+./transform train4.txt test4.txt
+./transform train5.txt test5.txt
