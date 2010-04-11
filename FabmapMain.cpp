@@ -8,15 +8,46 @@
 #include "fabmap/ChowLiuTree.h"
 #include "fabmap/DetectorModel.h"
 #include "fabmap/FABMAP.h"
+#include "fabmap/Timer.h"
 
 int main()
 {
-	// train a new model (parameter infos in FABMAP.h)
-	FABMAP fm(1.0, 20, FABMAP::CHOWLIU, 0.0, 0.39, "fabmap.codebook", "training_data.txt");
-	// or load an existing model from file (if the first option was run once before)
-	//FABMAP fm(1.0, 20, FABMAP::CHOWLIU, 0.0, 0.39, "fabmap.codebook", "training_data.txt", "ChowLiuTree.txt");  //0.99999999999999999999
+	// 1. initialize the fabmap algorithm
+	// constructor parameters:
+	// sigma is the smoothing factor (see equation (18)) - worked pretty bad, messed with the probabilities, I always set it to 1 (i.e. disabled)
+	// numberOfSamples is the number of samples for the unknown place during the calculation of the normalization term (n_s in the paper in equation (17) in chapter 4.3.2)
+	// approximationModel is one of the elements in enum ObservationLikelihoodModel (NAIVEBAYES, CHOWLIU)
+	// falsePositiveProbability, falseNegativeProbability - the detector model probabilities (see detector model)
+	// codebookFile is the file containing the codebook
+	// trainingDataFile is the file name of the file with training data (vector<vector<int>>), if this parameter is "" you must provide a modelFile
+	// modelFile - if the model was already generated, it can be loaded from a model file, if it does not exist already, it will be written into that file for later use
+	// loadModel - if true, then the model will be loaded from file modelFile, if false, the model will be saved in file modelFile
 
-	fm.onlineApplication("../../../data/CityCentre_Images/Images/", 200);		//"../../../data/NewCollege_Images/Images/"
+	// -> either train a new model (further parameter infos in FABMAP.h)
+	TheTimer.start();
+//	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", false);
+	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", false);
+	std::cout << "ChowLiu tree learning needed " << TheTimer.getRuntime() << "s." << std::endl;
+
+	// -> or load an existing model from file (if the first option was run once before)
+	//FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c10000.codebook", "training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", true);  //0.99999999999999999999
+
+	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// 2. run the fabmap algorithm (do loop closure detection)
+	
+	TheTimer.start();
+
+	// -> either you provide the path where all images can be found + the number of images to process + the probability at which a loop closure is accepted
+	//fm.onlineApplication("../../../data/NewCollege_Images/Images/", 200, 0.99);
+
+	// -> or you load the pre-built histogram data from file (be careful to build it from the test image set with the training set word clusters!),
+	//    then provide the file with the histogram data + -1 (indicates pre-built file to the function) + the probability at which a loop closure is accepted
+//	fm.onlineApplication("_test_data_NewCollege_cbCityCentre_c10000.txt", -1, 0.99);
+	fm.onlineApplication("_test_data_NewCollege_cbCityCentre_c100.txt", -1, 0.99);
+
+	std::cout << "Fabmap needed " << TheTimer.getRuntime() << "s." << std::endl;
+
 
 	getchar();
 	return 0;

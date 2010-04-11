@@ -2,8 +2,8 @@
 
 #include "ChowLiuTree.h"
 
-ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> > training_data)
-: InterfaceObservationLikelihood(training_data)
+ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename)
+: InterfaceObservationLikelihood(training_data, pCLTreeFilename)
 {
 	mTrainingData = training_data;
 
@@ -20,7 +20,7 @@ ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> > training_data)
 
 	generateChowLiuProbabilities();
 
-	saveModel();
+	saveModel(pCLTreeFilename);
 
 	srand((unsigned)time(0));
 }
@@ -39,6 +39,7 @@ ChowLiuTree::~ChowLiuTree()
 
 std::vector< std::vector<double> > ChowLiuTree::calculateMutualInformation()
 {
+	std::cout << "Start ChowLiuTree::calculateMutualInformation()" << std::endl;
 	std::vector< std::vector<double> > p;		// marginal probabilities [attribute number][value number]
 	p.resize(mAttributeSizes.size());
 	for (unsigned int i=0; i<mAttributeSizes.size(); i++)
@@ -108,6 +109,8 @@ std::vector< std::vector<double> > ChowLiuTree::calculateMutualInformation()
 
 void ChowLiuTree::primMaximumSpanningTree(std::vector< std::vector<double> > edgeWeights)
 {
+	std::cout << "Start ChowLiuTree::primMaximumSpanningTree()" << std::endl;
+
 	// the node queue hold the nodes ordered with their distance to the spanning tree <value, node number>
 	std::multimap<double, int> NodeQueue;
 	std::multimap<double, int>::iterator ItNodeQueue, ItNodeQueue2;
@@ -193,17 +196,19 @@ void ChowLiuTree::primMaximumSpanningTree(std::vector< std::vector<double> > edg
 
 void ChowLiuTree::generateChowLiuProbabilities()
 {
+	std::cout << "Start ChowLiuTree::generateChowLiuProbabilities()" << std::endl;
+
 	// initialize all probabilities with count 0.1 in order to avoid zero probabilities
 	// mProbabilityModel[attr][a][b] stands for p( attr=a | parent(attr)=b )
 	// mMarginalPriorProbability[attr][a] stands for p(z_attr = a)
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
 		// first-order dependent probabilities
-		std::vector<std::vector<double> > temp2;
+		std::vector<std::vector<float> > temp2;
 		for (int a=0; a<mAttributeSizes[attr]; a++)
 		{
-			std::vector<double> temp;
-			temp.resize(mAttributeSizes[mParentIndex[attr]], 0.1);
+			std::vector<float> temp;
+			temp.resize(mAttributeSizes[mParentIndex[attr]], 0.1f);
 			//for (int b=0; b<mAttributeSizes[mParentIndex[attr]]; b++)
 			//{
 			//	temp.push_back(0.1);
@@ -221,6 +226,7 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	mProbabilityModel[0][1][0] = 0.0;
 
 	// count occurences in training data
+	std::cout << "count";
 	for (unsigned int sample=0; sample<mTrainingData.size(); sample++)
 	{
 		for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
@@ -231,6 +237,7 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	}
 
 	// normalize probabilities
+	std::cout << "normalize";
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
 		// first-order dependent probabilities
@@ -248,12 +255,12 @@ void ChowLiuTree::generateChowLiuProbabilities()
 	}
 }
 
-void ChowLiuTree::saveModel()
+void ChowLiuTree::saveModel(std::string pCLTreeFilename)
 {
-	std::ofstream out(CLTreeFilename.c_str());
+	std::ofstream out(pCLTreeFilename.c_str());
 	if(!out.is_open())
 	{
-		std::cout << "Error: could not open " << CLTreeFilename.c_str() << "\n";
+		std::cout << "Error: could not open " << pCLTreeFilename.c_str() << "\n";
 		return;
 	}
 
@@ -337,14 +344,14 @@ void ChowLiuTree::loadModel(std::string filename)
 	double prob = 0.0;
 	for (unsigned int attr=0; attr<mAttributeSizes.size(); attr++)
 	{
-		std::vector<std::vector<double> > temp2;
+		std::vector<std::vector<float> > temp2;
 		for (int a=0; a<mAttributeSizes[attr]; a++)
 		{
-			std::vector<double> temp;
+			std::vector<float> temp;
 			for (int b=0; b<mAttributeSizes[mParentIndex[attr]]; b++)
 			{
 				in >> prob;
-				temp.push_back(prob);
+				temp.push_back((float)prob);
 			}
 			temp2.push_back(temp);
 		}

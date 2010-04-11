@@ -12,10 +12,10 @@
 
 class InterfaceObservationLikelihood {
 public:
-	//takes the training data in the form [image[histogram of image]] and generates the Chow Liu tree
-	InterfaceObservationLikelihood(std::vector<std::vector<int> > training_data) {};
+	//takes the training data in the form [image[histogram of image]] and generates the naive Bayes model or the Chow Liu tree
+	InterfaceObservationLikelihood(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename) {};
 	
-	// loads the stored Chow Liu Tree from file
+	// loads the stored naive Bayes model or Chow Liu Tree from file
 	InterfaceObservationLikelihood(std::string pCLTreeFilename) {};
 	
 	virtual ~InterfaceObservationLikelihood() {};

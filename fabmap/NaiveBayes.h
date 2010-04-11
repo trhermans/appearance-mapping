@@ -12,13 +12,15 @@
 #include "InterfaceDetectorModel.h"
 #include "InterfacePlaceModel.h"
 
-const std::string NaiveBayesFilename = "NaiveBayes.txt";
+//const std::string NaiveBayesFilename = "NaiveBayes.txt";
 
 class NaiveBayes : public InterfaceObservationLikelihood
 {
 public :
-	NaiveBayes(std::vector<std::vector<int> > training_data);
-	NaiveBayes(std::string pCLTreeFilename);
+	// constructor which trains the model using the training_data and saves the model into pModelFile
+	NaiveBayes(std::vector<std::vector<int> > training_data, std::string pModelFile);
+	// constructor which loads the model from pModelFile
+	NaiveBayes(std::string pModelFile);
 	~NaiveBayes();
 
 	// returns p(Z_k | L_i) as defined in equations (5)-(8) for the NaiveBayes, i=location, Z_k=observations
@@ -38,7 +40,7 @@ private:
 	void generateMarginalProbabilities();
 
 	// saves the Naive Bayes model (i.e. the marginals)
-	void saveModel();
+	void saveModel(std::string pModelFile);
 	
 	// loads the Naive Bayes model from file (i.e. the marginals)
 	void loadModel(std::string filename);

@@ -11,7 +11,7 @@ class VisualCodebook
   VisualCodebook(int k=0, bool use128_surf = true);
 
   // Core Methods
-  void constructCodebook(std::string img_path, int img_count);
+  void constructCodebook(std::string img_path, int img_count, int mode=0);
   std::vector<int> getCodewords(IplImage& img);
   const int nearestCenter(const float * desc);
 
