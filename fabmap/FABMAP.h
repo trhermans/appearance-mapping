@@ -31,20 +31,24 @@ public:
 	// falsePositiveProbability, falseNegativeProbability - the detector model probabilities (see detector model)
 	// codebookFile is the file containing the codebook
 	// trainingDataFile is the file name of the file with training data (vector<vector<int>>), if this parameter is "" you must provide a modelFile
-	// modelFile - if the model was already generated, it can be loaded from a model file
-	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile="");
+	// modelFile - if the model was already generated, it can be loaded from a model file, if it does not exist already, it will be written into that file for later use
+	// loadModel - if true, then the model will be loaded from file modelFile, if false, the model will be saved in file modelFile
+	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile, boolean loadModel);
 
 	~FABMAP();
 
 	// does probabilistic localization and mapping in the space of appearance with the provided data
-	// imagePath is the path where the images can be found, e.g. "../../data/images/"
-	void onlineApplication(std::string imagePath, int numberOfImages);
+	// imagePath is the path where the images can be found, e.g. "../../data/images/", then you must set numberOfImages to the number of images you want to process
+	// or
+	// trainingDataFile is the path where the histograms for the images are already stored (i.e. the bag-of-words stage of the image features is already done), then choose numberOfImages=-1 to indicate that
+	// loopClosureThreshold is the probability which must be exceeded by p(L_i | Z_k) in order to accept a location L_i as loop closure
+	void onlineApplication(std::string imagePath_or_trainingDataFile, int numberOfImages, double loopClosureThreshold);
 
 	enum ObservationLikelihoodModel {NAIVEBAYES, CHOWLIU};
 
 private:
 	// accomplishes all the offline learning (starts from image files) which is necessary before the algorithm can be applied
-	void offlinePreparationTrain(int approximationModel, std::string trainingDataFile);
+	void offlinePreparationTrain(int approximationModel, std::string trainingDataFile, std::string modelFile);
 
 	// loads existing offline-learned models from file which is necessary before the algorithm can be applied
 	void offlinePreparationLoad(int approximationModel, std::string modelFile);

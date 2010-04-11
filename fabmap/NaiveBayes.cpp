@@ -3,8 +3,8 @@
 #include "NaiveBayes.h"
 #include <stdlib.h>
 
-NaiveBayes::NaiveBayes(std::vector<std::vector<int> > training_data)
-: InterfaceObservationLikelihood(training_data)
+NaiveBayes::NaiveBayes(std::vector<std::vector<int> > training_data, std::string pModelFile)
+: InterfaceObservationLikelihood(training_data, pModelFile)
 {
 	mTrainingData = training_data;
 
@@ -16,15 +16,15 @@ NaiveBayes::NaiveBayes(std::vector<std::vector<int> > training_data)
 
 	generateMarginalProbabilities();
 
-	saveModel();
+	saveModel(pModelFile);
 
 	srand((unsigned)time(0));
 }
 
-NaiveBayes::NaiveBayes(std::string pNaiveBayesFilename)
-: InterfaceObservationLikelihood(pNaiveBayesFilename)
+NaiveBayes::NaiveBayes(std::string pModelFile)
+: InterfaceObservationLikelihood(pModelFile)
 {
-	loadModel(pNaiveBayesFilename);
+	loadModel(pModelFile);
 
 	srand((unsigned)time(0));
 }
@@ -71,12 +71,12 @@ void NaiveBayes::generateMarginalProbabilities()
 }
 
 
-void NaiveBayes::saveModel()
+void NaiveBayes::saveModel(std::string pModelFile)
 {
-	std::ofstream out(NaiveBayesFilename.c_str());
+	std::ofstream out(pModelFile.c_str());
 	if(!out.is_open())
 	{
-		std::cout << "Error: could not open " << NaiveBayesFilename.c_str() << "\n";
+		std::cout << "Error: could not open " << pModelFile.c_str() << "\n";
 		return;
 	}
 

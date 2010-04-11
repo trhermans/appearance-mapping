@@ -16,12 +16,14 @@
 #include "InterfaceDetectorModel.h"
 #include "InterfacePlaceModel.h"
 
-const std::string CLTreeFilename = "ChowLiuTree.txt";
+//const std::string CLTreeFilename = "ChowLiuTree.txt";
 
 class ChowLiuTree : public InterfaceObservationLikelihood
 {
 public :
-	ChowLiuTree(std::vector<std::vector<int> > training_data);
+	// constructor which trains the model using the training_data and saves the model into pCLTreeFilename
+	ChowLiuTree(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename);
+	// constructor which loads the model from pCLTreeFilename
 	ChowLiuTree(std::string pCLTreeFilename);
 	~ChowLiuTree();
 
@@ -46,7 +48,7 @@ private:
 	void generateChowLiuProbabilities();
 
 	// saves the Chow Liu Tree model
-	void saveModel();
+	void saveModel(std::string pCLTreeFilename);
 	
 	// loads the Chow Liu Tree model from file
 	void loadModel(std::string filename);

@@ -4,6 +4,7 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include "fabmap/Timer.h"
 
 #include "vis_codebook/visual_codebook.h"
 using namespace std;
@@ -25,6 +26,7 @@ int main(int argc, char** argv)
   vector<long> dist(k, 0);
   vector<vector<int> > training_data;
   int padding_size = 4;
+  TheTimer.start();
   for (int i = 1; i <= img_count; ++i)
   {
     stringstream image_name;
@@ -51,6 +53,7 @@ int main(int argc, char** argv)
         dist[j] += feat[j];
     }
   }
+  cout << "Histogram extraction needed " << TheTimer.getRuntime() << "s." << endl;
 
   cout << "Writing to disk" << endl;
   string save_path = "./word_dist.txt";
@@ -62,7 +65,7 @@ int main(int argc, char** argv)
   }
   dist_file.close();
 
-  save_path = "./training_data.txt";
+  save_path = "./_training_data.txt";
   dist_file.open(save_path.c_str(), ios::out);
   dist_file << training_data.size() << " " << training_data[0].size() << endl;;
   for (unsigned int i = 0; i < training_data.size(); ++i)
