@@ -25,8 +25,8 @@ int main()
 
 	// -> either train a new model (further parameter infos in FABMAP.h)
 	TheTimer.start();
-//	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", false);
-	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", false);
+//	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", false);
+	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", false);
 	std::cout << "ChowLiu tree learning needed " << TheTimer.getRuntime() << "s." << std::endl;
 
 	// -> or load an existing model from file (if the first option was run once before)

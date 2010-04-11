@@ -288,6 +288,12 @@ void VisualCodebook::loadCodebook(string path)
 {
   fstream input_file;
   input_file.open(path.c_str(), ios::in);
+  
+  if(!input_file.is_open())
+  {
+		std::cout << "VisualCodebook::loadCodebook: Error: could not open " << path.c_str() << "\n";
+		return;
+  }
   centers_.clear();
   while( !input_file.eof() )
   {
@@ -297,9 +303,7 @@ void VisualCodebook::loadCodebook(string path)
       float f;
       input_file >> f;
       center.push_back(f);
-	  std::cout << f << "\t";
     }
-	std::cout << "\n";
     if ( !input_file.eof() )
     {
       centers_.push_back(center);
