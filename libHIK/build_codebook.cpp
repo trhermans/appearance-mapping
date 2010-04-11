@@ -130,7 +130,7 @@ int main(int argc, char** argv)
   bool one_class_SVM = false;
   double ratio = 1.0;
   int padding_size = 4;
-  bool use_harris = true;
+  bool use_harris = false;
   
   // Read the image names into a vector
   for (int i = 1; i <= num_train_images; i++)
@@ -166,13 +166,14 @@ int main(int argc, char** argv)
     img_num_str.insert(0, num_zeros, '0');
     // Build the full path to the image
     image_name << test_img_path << img_num_str << ".jpg";
+    cout << image_name.str() << endl;
     if (use_harris)
       codebook->TranslateOneHarrisImage(image_name.str().c_str(),
-                                        stepSize, splitlevel, test_data.p[i],
+                                        stepSize, splitlevel, test_data.p[i-1],
                                         fsize, normalize, ratio, scaleChanges,
                                         true);
     codebook->TranslateOneImage(image_name.str().c_str(),
-                                stepSize, splitlevel, test_data.p[i],
+                                stepSize, splitlevel, test_data.p[i-1],
                                 fsize, normalize, ratio, scaleChanges, true);
     if(omp_get_thread_num()==0 && i%10==0) {
       cout<<".";
