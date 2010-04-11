@@ -25,9 +25,10 @@ void usage()
 {
   cout<<"Usage: build_codebook path/to/training_images/ "
            << "num_training_images path/to/testing_images/ num_testing_images "
-           << "K descriptor codebook output_path" << endl;
+           << "K descriptor codebook output_path use_harris" << endl;
   cout<<" descriptor: CENTRIST | SIFT"<<endl;
   cout<<" codebook: HIK | kmeans | kmedian"<<endl;
+  cout<<" use_harris: 0 | 1"<<endl;
 }
 
 CodeBook::CODEBOOK_TYPE FindCodeBook(const char* codebook)
@@ -108,7 +109,7 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
 
 int main(int argc, char** argv)
 {
-  if (argc != 9)
+  if (argc != 10)
   {
     usage();
     return -1;
@@ -122,6 +123,7 @@ int main(int argc, char** argv)
   const CodeBook::DESCRIPTOR_TYPE feature_type = FindDescriptor(argv[6]);
   const CodeBook::CODEBOOK_TYPE codebook_type = FindCodeBook(argv[7]);
   string out_path(argv[8]);
+  bool use_harris = atoi(argv[9]);
 
   int scaleChanges = 0; // We will densley compute the featuers at a single scale
   int stepSize = 8;
@@ -130,8 +132,7 @@ int main(int argc, char** argv)
   bool one_class_SVM = false;
   double ratio = 1.0;
   int padding_size = 4;
-  bool use_harris = false;
-  
+
   // Read the image names into a vector
   for (int i = 1; i <= num_train_images; i++)
   {
