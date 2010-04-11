@@ -1,6 +1,7 @@
 // author: Richard
 
 #include "ChowLiuTree.h"
+#include <stdlib.h>
 
 ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename)
 : InterfaceObservationLikelihood(training_data, pCLTreeFilename)

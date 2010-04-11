@@ -35,7 +35,7 @@ GEN_CODEBOOK_SRCS = generate_codebook.cpp
 TEST_CODEBOOK_SRCS = test_codebook_read.cpp
 VIS_CODEBOOK_SRCS = vis_codebook/visual_codebook.cpp \
 		    vis_codebook/visual_codebook.h
-FABMAP_MAIN_SRCS = FabMapMain.cpp
+FABMAP_MAIN_SRCS = FabmapMain.cpp
 FABMAP_CLASS_SRCS = fabmap/FABMAP.cpp \
 		    fabmap/FABMAP.h
 CHOW_LUI_SRCS = fabmap/ChowLiuTree.cpp \

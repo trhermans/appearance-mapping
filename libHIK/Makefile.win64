@@ -1,0 +1,83 @@
+# This file is modeled after the LIBSVM Makefile.win
+
+#You must ensure nmake.exe, cl.exe, link.exe are in system path.
+#Start Menu->Visual Studio 2008->Visual Studio Tools->Visual Studio 2008 x64 Win64 Command Prompt
+#Under dosbox prompt
+#nmake -f Makefile.win64
+
+CC = cl.exe
+CFLAGS = -nologo -O2 -EHsc -I. -D _CRT_SECURE_NO_DEPRECATE -c
+TARGET = windows
+
+#IMPORTANT: Make sure that you changed these paths to the one in your computer
+OPENCV_CV = -I "c:\program files (x86)\OpenCV\cv\include"
+OPENCV_AUX = -I "c:\program files (x86)\OpenCV\cvaux\include"
+OPENCV_CXCORE = -I "c:\program files (x86)\OpenCV\cxcore\include"
+OPENCV_HIGHGUI = -I "c:\program files (x86)\OpenCV\otherlibs\highgui"
+OPENCV_LIB = "c:\program files (x86)\OpenCV\lib"
+OPENCV = $(OPENCV_CV) $(OPENCV_AUX) $(OPENCV_CXCORE) $(OPENCV_HIGHGUI)
+
+all: $(TARGET)\transform.exe $(TARGET)\hik-predict.exe $(TARGET)\hik-bsvm-predict.exe $(TARGET)\hik-cluster.exe $(TARGET)\generate-data.exe
+
+$(TARGET)\transform.exe: transform.cpp svm.h
+	$(CC) transform.cpp -o $(TARGET)\transform.exe
+
+hik_svm.obj: hik_svm.cpp svm.h mdarray.h util.h hik_svm.h
+	$(CC) $(CFLAGS) hik_svm.cpp
+	
+UseSVM.obj: UseSVM.cpp svm.h mdarray.h util.h HistogramKernel.h
+	$(CC) $(CFLAGS) UseSVM.cpp
+
+hik-predict.obj: hik-predict.cpp svm.h mdarray.h util.h UseSVM.h hik_svm.h
+	$(CC) $(CFLAGS) hik-predict.cpp
+
+svm.obj: svm.cpp svm.h
+	$(CC) $(CFLAGS) -U_FORTIFY_SOURCE svm.cpp
+
+$(TARGET)\hik-predict.exe: hik-predict.obj hik_svm.obj svm.obj UseSVM.obj
+	$(CC) hik-predict.obj hik_svm.obj svm.obj UseSVM.obj -o $(TARGET)\hik-predict.exe
+
+hik-bsvm-precit.obj: svm.h mdarray.h util.h UseSVM.h hik_svm.h
+	$(CC) $(CFLAGS) hik-bsvm-predict.cpp
+
+$(TARGET)\hik-bsvm-predict.exe: hik-bsvm-predict.obj hik_svm.obj svm.obj UseSVM.obj
+	$(CC) hik-bsvm-predict.obj hik_svm.obj svm.obj UseSVM.obj -o $(TARGET)\hik-bsvm-predict.exe
+	
+HistogramKernel.obj: HistogramKernel.cpp svm.h HistogramKernel.h mdarray.h util.h UseSVM.h
+	$(CC) /openmp $(CFLAGS) HistogramKernel.cpp
+	
+LinearKernel.obj: LinearKernel.cpp LinearKernel.h mdarray.h util.h UseSVM.h svm.h
+	$(CC) /openmp $(CFLAGS) LinearKernel.cpp
+	
+Cluster.obj: Cluster.cpp Cluster.h mdarray.h util.h HistogramKernel.h LinearKernel.h
+	$(CC) $(CFLAGS) Cluster.cpp
+	
+util.obj: util.cpp util.h
+	$(CC) $(CFLAGS) util.cpp
+
+hik-cluster.obj: hik-cluster.cpp Cluster.h mdarray.h util.h
+	$(CC) $(CFLAGS) hik-cluster.cpp
+	
+$(TARGET)\hik-cluster.exe: hik-cluster.obj HistogramKernel.obj LinearKernel.obj svm.obj util.obj UseSVM.obj Cluster.obj
+	$(CC) /openmp hik-cluster.obj HistogramKernel.obj LinearKernel.obj svm.obj util.obj UseSVM.obj Cluster.obj -o $(TARGET)\hik-cluster.exe
+	
+Features.obj: Features.cpp Features.h mdarray.h util.h IntImage.h
+	$(CC) $(CFLAGS) $(OPENCV) Features.cpp
+	
+Codebook.obj: Codebook.cpp mdarray.h util.h IntImage.h HistogramKernel.h LinearKernel.h Codebook.h Features.h
+	$(CC) $(CFLAGS) $(OPENCV) Codebook.cpp
+	
+Matrix.obj: Matrix.cpp mdarray.h util.h
+	$(CC) $(CFLAGS) Matrix.cpp
+	
+Datasets.obj: Datasets.cpp util.h Codebook.h mdarray.h IntImage.h Features.h UseSVM.h svm.h Datasets.h
+	$(CC) /openmp $(CFLAGS) $(OPENCV) Datasets.cpp
+
+Generate_Data.obj: Generate_Data.cpp Datasets.h
+	$(CC) $(CFLAGS) $(OPENCV) Generate_Data.cpp
+	
+$(TARGET)\generate-data.exe: HistogramKernel.obj LinearKernel.obj svm.obj util.obj UseSVM.obj Matrix.obj Features.obj Codebook.obj Datasets.obj Generate_Data.obj
+	$(CC) /openmp $(OPENCV_LIB)\highgui_64.lib $(OPENCV_LIB)\cxcore_64.lib $(OPENCV_LIB)\cv_64.lib HistogramKernel.obj LinearKernel.obj svm.obj util.obj UseSVM.obj Matrix.obj Features.obj Codebook.obj Datasets.obj Generate_Data.obj -o $(TARGET)\generate-data.exe
+	
+clean:
+    -erase /Q *.obj $(TARGET)\transform.exe $(TARGET)\hik-cluster.exe $(TARGET)\hik-predict.exe $(TARGET)\hik-bsvm-predict.exe $(TARGET)\generate-data.exe $(TARGET)\*.manifest
