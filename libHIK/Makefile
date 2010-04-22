@@ -10,8 +10,8 @@ SOURCES = hik_svm.cpp hik-predict.cpp UseSVM.cpp transform.cpp\
 
 all: transform hik-predict hik-bsvm-predict hik-cluster generate-data SVMs build_codebook
 
-depend:
-	g++ $(CFLAGS) -MM $(SOURCES) > .deps
+# depend:
+# 	g++ $(CFLAGS) -MM $(SOURCES) > .deps
 
 transform: transform.cpp
 	$(CC) $(WLEVEL) -O3 transform.cpp -o transform
@@ -73,7 +73,7 @@ Generate_Data.o: Generate_Data.cpp
 generate-data: HistogramKernel.o LinearKernel.o svm.o util.o UseSVM.o Matrix.o Features.o Codebook.o Datasets.o Generate_Data.o
 	$(CC) -fopenmp `pkg-config --libs opencv` HistogramKernel.o LinearKernel.o svm.o util.o UseSVM.o Matrix.o Features.o Codebook.o Datasets.o Generate_Data.o -o generate-data
 
-build_codebook.o: Build_codebook.cpp
+build_codebook.o: build_codebook.cpp
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` build_codebook.cpp -o build_codebook.o
 
 build_codebook: HistogramKernel.o LinearKernel.o svm.o util.o UseSVM.o Matrix.o Features.o Codebook.o build_codebook.o
@@ -89,4 +89,4 @@ clean:
 	cd bsvm-2.06; make clean
 
 
-include .deps
+#include .deps

@@ -13,6 +13,7 @@
 static int fsize = 0;
 static const int resize_width = 512;
 static int window_size = 16;
+static std::vector<std::string> train_filenames;
 static std::vector<const char*> train_names;
 static const int upperBound = 129;
 static const int kmeans_stepsize = 24;
@@ -100,7 +101,7 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
     cout<<"Now do cluster and generate codewords."<<endl;
   }
   codebook->SetVerbose(true);
-  int valid = codebook->GenerateCodeWords(K,oneclassSVM);
+  int valid = codebook->GenerateCodeWords(K, oneclassSVM);
   if(splitlevel==0) fsize=valid;
   else if(splitlevel==1) fsize=valid*6;
   else if(splitlevel==2) fsize=valid*31;
@@ -144,9 +145,11 @@ int main(int argc, char** argv)
     string img_num_str = img_num.str();
     int num_zeros = padding_size - img_num_str.size();
     img_num_str.insert(0, num_zeros, '0');
-    // Build the full path to the image
     image_name << train_img_path << img_num_str << ".jpg";
-    train_names.push_back(image_name.str().c_str());
+    // Build the full path to the image
+    // cout << image_name.str() << endl;
+    train_filenames.push_back(image_name.str());
+    train_names.push_back(train_filenames[i-1].c_str());
   }
   // Build the Codebook
   CodeBook * codebook = CodeBookEngine(codebook_type, feature_type, K, useSobel,
@@ -157,6 +160,7 @@ int main(int argc, char** argv)
   Array2d<double> train_data;
   train_data.Create(num_train_images, fsize);
   StartOfDuration();
+
 #pragma omp parallel for
   for(int i=1; i <= num_train_images;i++) {
     // Create a zero padded list
@@ -168,7 +172,7 @@ int main(int argc, char** argv)
     img_num_str.insert(0, num_zeros, '0');
     // Build the full path to the image
     image_name << train_img_path << img_num_str << ".jpg";
-    cout << image_name.str() << endl;
+    // cout << image_name.str() << endl;
     if (use_harris)
       codebook->TranslateOneHarrisImage(image_name.str().c_str(),
                                         stepSize, splitlevel, train_data.p[i-1],
@@ -203,6 +207,7 @@ int main(int argc, char** argv)
   Array2d<double> test_data;
   test_data.Create(num_test_images, fsize);
   StartOfDuration();
+
 #pragma omp parallel for
   for(int i=1; i <= num_test_images;i++) {
     // Create a zero padded list
@@ -214,7 +219,7 @@ int main(int argc, char** argv)
     img_num_str.insert(0, num_zeros, '0');
     // Build the full path to the image
     image_name << test_img_path << img_num_str << ".jpg";
-    cout << image_name.str() << endl;
+    //cout << image_name.str() << endl;
     if (use_harris)
       codebook->TranslateOneHarrisImage(image_name.str().c_str(),
                                         stepSize, splitlevel, test_data.p[i-1],

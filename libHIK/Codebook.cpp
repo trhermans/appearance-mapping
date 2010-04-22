@@ -334,7 +334,7 @@ void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
   BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
   features.Create(1000,feature->Length());
   int added = 0;
-  for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
+  for(unsigned int imgindex=0; imgindex<files.size(); imgindex++)
   {
     const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth); // assign image to the feature extractor
     int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1); // number of features generated for this image
@@ -367,12 +367,15 @@ void LinearCodes::SetData(Array2d<int>& data)
   for(int i=0;i<data.nrow;i++) for(int j=0;j<data.ncol;j++) features.p[i][j] = data.p[i][j];
 }
 
-int LinearCodes::GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration)
+int LinearCodes::GenerateCodeWords(const int K, const bool oneclassSVM,
+                                   const int maxiteration)
 {
   Array2dC<int> labels(1,features.nrow);
   Array2dC<int> counts(1,K);
   rho.Create(1,K);
-  Linear_Kernel_Kmeans kmeans(features,K,0.0001,maxiteration,false,labels.buf,counts.buf,eval,rho.buf,useMedian,verbose);
+  Linear_Kernel_Kmeans kmeans(features, K, 0.0001, maxiteration, false,
+                              labels.buf, counts.buf, eval, rho.buf,
+                              useMedian, verbose);
   validcenters = kmeans.KernelKmeans();
   if(oneclassSVM) validcenters = kmeans.OneClassSVM();
   features.Clear();
@@ -403,6 +406,7 @@ void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,c
   int added = 0;
   for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
   {
+    cout << files[imgindex] << endl;
     const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth);
     int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1);
     if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));

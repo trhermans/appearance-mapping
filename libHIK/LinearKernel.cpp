@@ -20,16 +20,24 @@
 
 #include "svm.h"
 
-Linear_Kernel_Kmeans::Linear_Kernel_Kmeans(const Array2d<double>& _data,const int _k,const double _t,
-                                           const int _max_iteration,const bool _labelsInitialized,
-                                           int* _labels,int* _counts,Array2d<double>& _eval,double* _rho,const bool _useMedian,const bool _verbose)
-    :data(_data),k(_k),t(_t),max_iteration(_max_iteration),labelsInitialized(_labelsInitialized),
-     labels(_labels),counts(_counts),eval(_eval),rho(_rho),useMedian(_useMedian),verbose(_verbose),n(_data.nrow),m(_data.ncol),emptycenters(0),validcenters(k)
+Linear_Kernel_Kmeans::Linear_Kernel_Kmeans(const Array2d<double>& _data,
+                                           const int _k, const double _t,
+                                           const int _max_iteration,
+                                           const bool _labelsInitialized,
+                                           int* _labels,int* _counts,
+                                           Array2d<double>& _eval,double* _rho,
+                                           const bool _useMedian,
+                                           const bool _verbose) :
+    data(_data), k(_k), t(_t), max_iteration(_max_iteration),
+    labelsInitialized(_labelsInitialized), labels(_labels), counts(_counts),
+    eval(_eval), rho(_rho), useMedian(_useMedian), verbose(_verbose),
+    n(_data.nrow), m(_data.ncol), emptycenters(0), validcenters(k)
 {
     assert(n>=k && k>0);
     x_square = new double[n]; assert(x_square!=NULL);
     w_square = new double[n]; assert(w_square!=NULL);
-    for(int i=0;i<n;i++) x_square[i] = std::inner_product(data.p[i],data.p[i]+m,data.p[i],0.0);
+    for(int i=0;i<n;i++) x_square[i] = std::inner_product(data.p[i],data.p[i]+m,
+                                                          data.p[i],0.0);
 }
 
 Linear_Kernel_Kmeans::~Linear_Kernel_Kmeans()
@@ -260,18 +268,26 @@ void Linear_Kernel_Kmeans::InitKmeans(const bool labelsInitialized)
 
 int Linear_Kernel_Kmeans::KernelKmeans()
 {
-    if(verbose) std::cout<<"Initializing the linear kernel k-means algorithm."<<std::endl;
+    if(verbose) std::cout<< "Initializing the linear kernel k-means algorithm."
+                         << std::endl;
     StartOfDuration();
     InitKmeans(labelsInitialized);
-    if(verbose) std::cout<<"Initialization done for "<<data.nrow<<" features. Using "<<EndOfDuration()/1000<<" seconds."<<std::endl;
+    if(verbose) std::cout<< "Initialization done for " << data.nrow
+                         << " features. Using " << EndOfDuration()/1000
+                         <<" seconds."<< std::endl;
     // Initial fast evaluation of linear kernel values
     StartOfDuration();
     eval.Create(k,m);
     double error = BuildFastKernel();
     if(verbose)
     {
-        std::cout<<"Initial conditions: "<<emptycenters<<" empty clusters, error = "; std::cout.precision(12); std::cout<<error<<std::endl;
-        std::cout<<"Initial fast evaluation matrix and constants computed. Using "<<EndOfDuration()/1000<<" seconds."<<std::endl;
+        std::cout << "Initial conditions: " << emptycenters
+                  << " empty clusters, error = ";
+        std::cout.precision(12);
+        std::cout << error << std::endl;
+        std::cout
+            << "Initial fast evaluation matrix and constants computed. Using "
+            << EndOfDuration()/1000 << " seconds." << std::endl;
     }
 
     double olderror;
@@ -323,7 +339,8 @@ int Linear_Kernel_Kmeans::OneClassSVM()
 {
     if(verbose) std::cout<<"  Training SVM for cluster : ";
 // #pragma omp parallel for num_threads(2)
-    // NOTE: set num_threads = 2 or comment out to avoid memory overflow for large datasets
+    // NOTE: set num_threads = 2 or comment out to avoid memory overflow for
+    // large datasets
     for(int i=0;i<k;i++)
     {
         if(verbose) { std::cout<<i+1<<"."; std::cout.flush(); }

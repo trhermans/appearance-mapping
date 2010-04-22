@@ -31,114 +31,115 @@ void VisualCodebook::constructCodebook(string img_path, int img_count, int mode)
   vector<float*> raw_descriptors;
   if (mode<2)
   {
-	  int padding_size = 4;
-	  TheTimer.start();
-	  for(int i = 1; i <= img_count; ++i)
-	  {
-		IplImage* cur;
-		stringstream image_name;
+    int padding_size = 4;
+    TheTimer.start();
+    for(int i = 1; i <= img_count; ++i)
+    {
+      IplImage* cur;
+      stringstream image_name;
 
-		// Create a zero padded list
-		stringstream img_num;
-		img_num << i;
-		string img_num_str = img_num.str();
-		int num_zeros = padding_size - img_num_str.size();
-		img_num_str.insert(0, num_zeros, '0');
+      // Create a zero padded list
+      stringstream img_num;
+      img_num << i;
+      string img_num_str = img_num.str();
+      int num_zeros = padding_size - img_num_str.size();
+      img_num_str.insert(0, num_zeros, '0');
 
-		// Build the full path to the image
-		image_name << img_path << img_num_str << ".jpg";
-		cout << image_name.str() << endl;
+      // Build the full path to the image
+      image_name << img_path << img_num_str << ".jpg";
+      cout << image_name.str() << endl;
 
-		// Read the image into memory
-		cur = cvLoadImage(image_name.str().c_str(), CV_8UC1);
+      // Read the image into memory
+      cur = cvLoadImage(image_name.str().c_str(), CV_8UC1);
 
-		// Find the descriptors for the image and store them into memory
-		CvSeq* keys = 0;
-		CvSeq* descriptors = 0;
-		CvMemStorage* mem  = cvCreateMemStorage(0);
-		CvSURFParams params = cvSURFParams(hessian_thresh_, use128_surf_);
+      // Find the descriptors for the image and store them into memory
+      CvSeq* keys = 0;
+      CvSeq* descriptors = 0;
+      CvMemStorage* mem  = cvCreateMemStorage(0);
+      CvSURFParams params = cvSURFParams(hessian_thresh_, use128_surf_);
 
-		cvExtractSURF(cur, 0, &keys, &descriptors, mem, params);
+      cvExtractSURF(cur, 0, &keys, &descriptors, mem, params);
 
-		// Add the descriptors to the current set
-		CvSeqReader reader;
-		cvStartReadSeq(descriptors, &reader, 0);
-		for(int j = 0; j < descriptors->total; ++j)
-		{
-		  const float * desc = (const float*)(reader.ptr);
-		  CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
-		  float* desc_array;
-		  desc_array = new float[desc_size_];
-		  for(int k = 0; k < desc_size_; ++k)
-		  {
-			 desc_array[k] = desc[k];
-		  }
-		  raw_descriptors.push_back(desc_array);
-		}
-		cvReleaseMemStorage(&mem);
-	  }
-	  cout << "SURF feature extraction needed " << TheTimer.getRuntime() << "s." << endl;
+      // Add the descriptors to the current set
+      CvSeqReader reader;
+      cvStartReadSeq(descriptors, &reader, 0);
+      for(int j = 0; j < descriptors->total; ++j)
+      {
+        const float * desc = (const float*)(reader.ptr);
+        CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
+        float* desc_array;
+        desc_array = new float[desc_size_];
+        for(int k = 0; k < desc_size_; ++k)
+        {
+          desc_array[k] = desc[k];
+        }
+        raw_descriptors.push_back(desc_array);
+      }
+      cvReleaseMemStorage(&mem);
+    }
+    cout << "SURF feature extraction needed "
+         << TheTimer.getRuntime() << "s." << endl;
   }
 
   if (mode==1)
   {
-	  // save descriptors in file to avoid the SURF step in further versions
-	  fstream output_file;
-	  output_file.open("_surfDescriptors.txt", ios::out);
-	  output_file << raw_descriptors.size() << "\t" << desc_size_ << endl;
-	  for(unsigned int i = 0; i < raw_descriptors.size(); i++)
-	  {
-		for(int j = 0; j < desc_size_; j++)
-		{
-		  output_file << raw_descriptors[i][j];
-		  if (j < desc_size_ -1)
-			output_file << "\t";
-		}
-		output_file << endl;
-	  }
-	  output_file.close();
+    // save descriptors in file to avoid the SURF step in further versions
+    fstream output_file;
+    output_file.open("_surfDescriptors.txt", ios::out);
+    output_file << raw_descriptors.size() << "\t" << desc_size_ << endl;
+    for(unsigned int i = 0; i < raw_descriptors.size(); i++)
+    {
+      for(int j = 0; j < desc_size_; j++)
+      {
+        output_file << raw_descriptors[i][j];
+        if (j < desc_size_ -1)
+          output_file << "\t";
+      }
+      output_file << endl;
+    }
+    output_file.close();
   }
 
   int num_desc=0;
   CvMat* descriptors = 0;
   if (mode==2)
   {
-	  // load descriptors from file to avoid the SURF step in further versions
-	  cout << "Loading descriptor file..." << endl;
-	  fstream input_file;
-	  input_file.open("_surfDescriptors_CityCentre.txt", ios::in);
-	  int m=0;
-	  int n=0;
-	  input_file >> m >> n;
-	  num_desc = m;
-	  descriptors = cvCreateMat(num_desc, desc_size_, CV_32FC1);
-	  for(int i = 0; i < m; i++)
-	  {
-		for(int j = 0; j < n; j++)
-		{
-		  float temp = 0.0;
-		  input_file >> temp;
-		  cvSetReal2D(descriptors, i, j, temp);
-		}
-	  }
-	  input_file.close();
-	  cout << "Descriptor file loaded." << endl;
+    // load descriptors from file to avoid the SURF step in further versions
+    cout << "Loading descriptor file..." << endl;
+    fstream input_file;
+    input_file.open("_surfDescriptors_CityCentre.txt", ios::in);
+    int m=0;
+    int n=0;
+    input_file >> m >> n;
+    num_desc = m;
+    descriptors = cvCreateMat(num_desc, desc_size_, CV_32FC1);
+    for(int i = 0; i < m; i++)
+    {
+      for(int j = 0; j < n; j++)
+      {
+        float temp = 0.0;
+        input_file >> temp;
+        cvSetReal2D(descriptors, i, j, temp);
+      }
+    }
+    input_file.close();
+    cout << "Descriptor file loaded." << endl;
   }
 
   if (mode<2)
   {
-	  // Convert raw descriptors
-	  num_desc = raw_descriptors.size();
-	  descriptors = cvCreateMat(num_desc, desc_size_, CV_32FC1);
-	  for(int i = 0; i < num_desc; ++i)
-	  {
-		for(int j = 0; j < desc_size_; ++j)
-		{
-		  descriptors->data.fl[i*desc_size_ + j] = raw_descriptors[i][j];
-		}
-		delete[] raw_descriptors[i];
-	  }
-	  raw_descriptors.clear();
+    // Convert raw descriptors
+    num_desc = raw_descriptors.size();
+    descriptors = cvCreateMat(num_desc, desc_size_, CV_32FC1);
+    for(int i = 0; i < num_desc; ++i)
+    {
+      for(int j = 0; j < desc_size_; ++j)
+      {
+        descriptors->data.fl[i*desc_size_ + j] = raw_descriptors[i][j];
+      }
+      delete[] raw_descriptors[i];
+    }
+    raw_descriptors.clear();
   }
 
 
@@ -288,11 +289,11 @@ void VisualCodebook::loadCodebook(string path)
 {
   fstream input_file;
   input_file.open(path.c_str(), ios::in);
-  
   if(!input_file.is_open())
   {
-		std::cout << "VisualCodebook::loadCodebook: Error: could not open " << path.c_str() << "\n";
-		return;
+    std::cout << "VisualCodebook::loadCodebook: Error: could not open "
+              << path.c_str() << "\n";
+    return;
   }
   centers_.clear();
   while( !input_file.eof() )
