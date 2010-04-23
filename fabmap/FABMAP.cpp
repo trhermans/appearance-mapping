@@ -2,7 +2,7 @@
 
 #include "FABMAP.h"
 
-FABMAP::FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile, boolean loadModel)
+FABMAP::FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile, bool loadModel)
 {
 	if (loadModel==false) offlinePreparationTrain(approximationModel, trainingDataFile, modelFile);
 	else offlinePreparationLoad(approximationModel, modelFile);

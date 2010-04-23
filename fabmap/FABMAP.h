@@ -33,7 +33,7 @@ public:
 	// trainingDataFile is the file name of the file with training data (vector<vector<int>>), if this parameter is "" you must provide a modelFile
 	// modelFile - if the model was already generated, it can be loaded from a model file, if it does not exist already, it will be written into that file for later use
 	// loadModel - if true, then the model will be loaded from file modelFile, if false, the model will be saved in file modelFile
-	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile, boolean loadModel);
+	FABMAP(double sigma, int numberOfSamples, int approximationModel, double falsePositiveProbability, double falseNegativeProbability, std::string codebookFile, std::string trainingDataFile, std::string modelFile, bool loadModel);
 
 	~FABMAP();
 

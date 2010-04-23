@@ -50,6 +50,13 @@ SIMPLE_LOCATION_SRCS = fabmap/SimpleLocationPrior.cpp \
 		       fabmap/SimpleLocationPrior.h
 NORMALIZATION_SRCS = fabmap/NormalizationTermSampling.cpp \
 		     fabmap/NormalizationTermSampling.h
+
+PF_SRCS = PF.cpp \
+	  PF.h
+
+TIMER_SRCS = fabmap/Timer.cpp \
+	     fabmap/Timer.h
+
 # List of object files
 OBJS =  $(OBJ_DIR)/visual_codebook.o \
 	$(OBJ_DIR)/chow_lui.o \
@@ -58,7 +65,9 @@ OBJS =  $(OBJ_DIR)/visual_codebook.o \
 	$(OBJ_DIR)/detector_model.o \
 	$(OBJ_DIR)/place_model.o \
 	$(OBJ_DIR)/simple_location_prior.o \
-	$(OBJ_DIR)/normalization_term.o
+	$(OBJ_DIR)/normalization_term.o \
+	$(OBJ_DIR)/PF.o \
+	$(OBJ_DIR)/Timer.o
 
 # List of executables
 EXECS = generate_codebook test_codebook_read fabmap_exec
@@ -112,6 +121,12 @@ $(OBJ_DIR)/normalization_term.o: $(NORMALIZATION_SRCS)
 	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
 
 $(OBJ_DIR)/visual_codebook.o: $(VIS_CODEBOOK_SRCS)
+	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
+
+$(OBJ_DIR)/PF.o: $(PF_SRCS)
+	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
+
+$(OBJ_DIR)/Timer.o: $(TIMER_SRCS)
 	$(C++) $(C++-FLAGS) $(INCLUDE) -c $< -o $@
 
 .Phony : clean build_dir
