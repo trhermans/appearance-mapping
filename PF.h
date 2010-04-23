@@ -127,9 +127,9 @@ class PF
   virtual ~PF();
 
   // Core Functions
-  virtual void updateLocalization(MotionModel u_t,
-                                  LoopClosure z_t);
-  virtual void reset(PoseEst est, float spread);
+  virtual void updateOdometry(MotionModel u_t);
+  virtual void updateLoopClosure(LoopClosure z_t);
+  virtual void reseed(PoseEst est, float spread);
 
   // Getters
   const PoseEst getCurrentEstimate() const { return curEst; }
@@ -224,6 +224,7 @@ class PF
   PoseEst curBest; // Current {x,y,h} esitamate of the highest weighted particle
   PoseEst curUncert; // Associated {x,y,h} uncertainties (standard deviations)
   std::vector<Particle> X_t; // Current set of particles
+  std::vector<Particle> X_bar_t; // A priori estimates
   bool useBest;
   MotionModel lastOdo;
 

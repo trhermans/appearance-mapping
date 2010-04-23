@@ -44,10 +44,8 @@ PF::~PF()
 /**
  * Method to reset the particle filter to an initial state.
  */
-void PF::reset(PoseEst est, float spread)
+void PF::reseed(PoseEst est, float spread)
 {
-  //frameCounter = 0;
-
   for (int m = 0; m < M; ++m) {
     PoseEst x_m(est.x + sampleUniformDistribution(spread),
                 est.y + sampleUniformDistribution(spread),
@@ -68,14 +66,14 @@ void PF::reset(PoseEst est, float spread)
  * @param resample Should we resample during this update
  * @return The set of particles representing the estimate of the current frame.
  */
-void PF::updateLocalization(MotionModel u_t, LoopClosure z_t)
+void PF::updateOdometry(MotionModel u_t)
 {
   frameCounter++;
   // Set the current particles to be of time minus one.
   vector<Particle> X_t_1 = X_t;
   // Clar the current set
   X_t.clear();
-  vector<Particle> X_bar_t; // A priori estimates
+  X_bar_t.clear();
   float totalWeights = 0.; // Must sum all weights for zture use
 
   // Run through the particles
@@ -88,10 +86,13 @@ void PF::updateLocalization(MotionModel u_t, LoopClosure z_t)
     // Add the particle to the current frame set
     X_bar_t.push_back(x_t_m);
   }
+}
 
+void PF::updateLoopClosure(LoopClosure z_t)
+{
   // Resample the particles
   if (z_t.loop_detected_) {
-    reset(z_t.detected_closure_location_, RESEED_SPREAD);
+    reseed(z_t.detected_closure_location_, RESEED_SPREAD);
   } else {
     noResample(&X_bar_t);
   }
