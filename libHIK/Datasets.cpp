@@ -129,10 +129,10 @@ void SplitData()
       train_names.push_back(filenames[classStartings.buf[c]+
                                       perm.buf[i]].c_str());
     }
-    for(int i=trainsize;i<std::min(classSizes.buf[c],trainsize+testsize);i++) {
+    for(int i=trainsize;i<std::min<int>(classSizes.buf[c],trainsize+testsize);i++) {
       split.buf[classStartings.buf[c]+perm.buf[i]] = 1; // testing
     }
-    for(int i=std::min(classSizes.buf[c],trainsize+testsize);
+    for(int i=std::min<int>(classSizes.buf[c],trainsize+testsize);
         i<classSizes.buf[c];i++) {
       split.buf[classStartings.buf[c]+perm.buf[i]] = -1; // ignored
     }
@@ -141,8 +141,8 @@ void SplitData()
 
 void GenerateDatasetsSeparateCodebook()
 {   // Generate training/testing data using CODEBOOK_Separate
-  //unsigned seed = 1194575810;
-  unsigned seed=(unsigned)time(NULL);
+  unsigned seed = 1194575810;
+  //unsigned seed=(unsigned)time(NULL);
   my_srand(seed);
   Array2d<double> traindata,testdata;
   Array2d<int> trainAffVals,testAffVals;
@@ -154,7 +154,7 @@ void GenerateDatasetsSeparateCodebook()
     trainsetsize = trainsize*numClass;
     testsetsize = 0;
     for(int c=0;c<numClass;c++) {
-      testsetsize += std::min(classSizes.buf[c]-trainsize,testsize);
+      testsetsize += std::min<int>(classSizes.buf[c]-trainsize,testsize);
     }
     trainlabels.Create(1,trainsetsize); testlabels.Create(1,testsetsize);
     trainmapping.Create(1,trainsetsize); testmapping.Create(1,testsetsize);
@@ -266,8 +266,8 @@ void GenerateDatasetsSeparateCodebook()
 void GenerateDatasetsSingleCodebook()
 {   // Generate training/testing data using CODEBOOK_Single
   // since the same codebook is used, an image will have the same output vector in different cross validation splittings
-  //unsigned seed = 1194575810;
-  unsigned seed=(unsigned)time(NULL);
+  unsigned seed = 1194575810;
+  //unsigned seed=(unsigned)time(NULL);
   my_srand(seed);
   Array2dC<int> split(1,totalsize); // -1: not using; 0: training; 1:testing
   Array2d<double> data;
@@ -281,7 +281,7 @@ void GenerateDatasetsSingleCodebook()
   {
     SplitData();
     usefulsize = 0; // number of images used in this splitting
-    for(int c=0;c<numClass;c++) usefulsize += (trainsize+std::min(classSizes.buf[c]-trainsize,testsize));
+    for(int c=0;c<numClass;c++) usefulsize += (trainsize+std::min<int>(classSizes.buf[c]-trainsize,testsize));
     mapping.Create(1,usefulsize);
     int mapped = 0;
     for(int i=0;i<totalsize;i++)

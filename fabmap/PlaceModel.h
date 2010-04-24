@@ -32,7 +32,7 @@ public:
 	std::set<int>& getAdjacentLocations(int location) { return mPlaceAdjancencyList[location]; };
 
 	// adds a new location, a new location is initialized with p(e_ei=es | L_j) = p(e_ei=es), these marginals have to be provided in marginalProbabilities[ei][es]
-	void addLocation(std::vector<std::vector<double> >& marginalProbabilities);
+	void addLocation(std::vector<std::vector<double> > marginalProbabilities);
 
 	// updates the place model after an observation as defined in euqation (19),
 	// observations is the vector of observations Z_k,

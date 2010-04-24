@@ -1,6 +1,6 @@
 // Author: Jianxin Wu (wujx2001@gmail.com)
 
-#include <cv.h>
+#include <opencv/cv.h>
 
 #if defined ( _WIN32)
 #define _USE_MATH_DEFINES
@@ -78,7 +78,7 @@ void SiftFeature::GradientAndOrientation()
             double diff1 = img.p[i+1][j]-img.p[i-1][j];
             double diff2 = img.p[i][j+1]-img.p[i][j-1];
             grad.p[i][j] = sqrt(diff1*diff1+diff2*diff2);
-            orient.p[i][j] = int(round(atan2(diff1,diff2)/M_PI_4)+4);
+            orient.p[i][j] = int(round(atan2(diff1,diff2)/3.1415926535897932384626433832795)+4);
             if(orient.p[i][j]>=8) orient.p[i][j]=0;
         }
     }

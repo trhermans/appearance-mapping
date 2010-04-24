@@ -3,26 +3,33 @@
 #include "ChowLiuTree.h"
 #include <stdlib.h>
 
-ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename)
+ChowLiuTree::ChowLiuTree(std::vector<std::vector<int> >& training_data, std::string pCLTreeFilename, bool calculateModel)
 : InterfaceObservationLikelihood(training_data, pCLTreeFilename)
 {
 	mTrainingData = training_data;
 
-	//set number of discrete attribute values per attribute (which are 0,1,2,...,n)
-	for (unsigned int i=0; i<mTrainingData.begin()->size(); i++)
+	if (calculateModel==false)
 	{
-		mAttributeSizes.push_back(2);
+		loadModel(pCLTreeFilename);
 	}
+	else
+	{
+		//set number of discrete attribute values per attribute (which are 0,1,2,...,n)
+		for (unsigned int i=0; i<mTrainingData.begin()->size(); i++)
+		{
+			mAttributeSizes.push_back(2);
+		}
 
-	// calculate optimal first-order dependences
-	std::vector< std::vector<double> > mutualInformation = calculateMutualInformation();
+		// calculate optimal first-order dependences
+		std::vector< std::vector<double> > mutualInformation = calculateMutualInformation();
 
-	primMaximumSpanningTree(mutualInformation);
+		primMaximumSpanningTree(mutualInformation);
 
-	generateChowLiuProbabilities();
+		generateChowLiuProbabilities();
 
-	saveModel(pCLTreeFilename);
+		saveModel(pCLTreeFilename);
 
+	}
 	srand((unsigned)time(0));
 }
 
@@ -209,7 +216,7 @@ void ChowLiuTree::generateChowLiuProbabilities()
 		for (int a=0; a<mAttributeSizes[attr]; a++)
 		{
 			std::vector<double> temp;
-			temp.resize(mAttributeSizes[mParentIndex[attr]], 0.1f);
+			temp.resize(mAttributeSizes[mParentIndex[attr]], 0.001f);
 			//for (int b=0; b<mAttributeSizes[mParentIndex[attr]]; b++)
 			//{
 			//	temp.push_back(0.1);
@@ -370,12 +377,34 @@ void ChowLiuTree::loadModel(std::string filename)
 	}
 
 	in.close();
+
+	// build sampling order
+	std::vector<int> done;
+	done.resize((int)mAttributeSizes.size(), 0);
+	mSamplingOrder.clear();
+	mSamplingOrder.push_back(0);
+	done[0] = 1;
+	int attributesSampled = 1;
+	while (attributesSampled < (int)mAttributeSizes.size())
+	{
+		for (int attr=1; attr<(int)mAttributeSizes.size(); attr++)
+		{
+			// sample if parent attribute is already set
+			if ((done[mParentIndex[attr]] != 0) && (done[attr]==0))
+			{
+				mSamplingOrder.push_back(attr);
+				done[attr] = 1;
+				attributesSampled++;
+			}
+		}
+	}
 }
 
 
-double ChowLiuTree::evaluate(std::vector<int> observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel)
+double ChowLiuTree::evaluate(std::vector<int>& observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel)
 {
-	double p_Zk_Li = 1.0;	// = p(Z_k | L_i), i.e. the return value of this function
+	//double p_Zk_Li = 1.0;	// = p(Z_k | L_i), i.e. the return value of this function
+	double p_Zk_Li_log = 0.0;
 	
 	double p_zr_Li = 0.0;	// = p(z_r | L_i), i.e. the marginal probability of the root observation attribute (i.e. z_0) given location L_i
 	for (int s=0; s<mAttributeSizes[0]; s++)
@@ -383,7 +412,8 @@ double ChowLiuTree::evaluate(std::vector<int> observations, int location, Interf
 		p_zr_Li += detectorModel->getDetectorProbability(observations[0], s) * placeModel->getWordProbability(0, s, location);	// equation (8)
 	}
 	if (p_zr_Li>1.0) std::cout << "ChowLiuTree::evaluate: p_zr_Li > 1\n";
-	p_Zk_Li *= p_zr_Li;
+	//p_Zk_Li *= p_zr_Li;
+	p_Zk_Li_log += log(p_zr_Li);
 
 	for (unsigned int attr=1; attr<mAttributeSizes.size(); attr++)
 	{
@@ -402,10 +432,12 @@ double ChowLiuTree::evaluate(std::vector<int> observations, int location, Interf
 		}
 		if (p_zq_zpq_Li>1.0) std::cout << "ChowLiuTree::evaluate: p_zq_zpq_Li > 1\n";
 
-		p_Zk_Li *= p_zq_zpq_Li;
+		//p_Zk_Li *= p_zq_zpq_Li;
+		p_Zk_Li_log += log(p_zq_zpq_Li);
 	}
 
-	return p_Zk_Li;
+	//return p_Zk_Li;
+	return p_Zk_Li_log;
 }
 
 double ChowLiuTree::getMarginalPriorProbability(int attr, int val)
@@ -413,10 +445,10 @@ double ChowLiuTree::getMarginalPriorProbability(int attr, int val)
 	return mMarginalPriorProbability[attr][val];
 }
 
-double ChowLiuTree::sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel)
+double ChowLiuTree::sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel, std::vector<int>& observation)
 {
 	// sample from Chow Liu distribution
-	std::vector<int> observation;
+	std::vector<int> sample;
 	observation.resize((int)mAttributeSizes.size(), -1);
 	
 	// sample the root
@@ -430,23 +462,17 @@ double ChowLiuTree::sampleNewPlaceObservation(InterfaceDetectorModel* detectorMo
 	
 	// sample the other attributes
 	int attributesSampled = 1;
-	while (attributesSampled < (int)mAttributeSizes.size())
+	for (int k=1; k<(int)mAttributeSizes.size(); k++)
 	{
-		for (int attr=1; attr<(int)mAttributeSizes.size(); attr++)
+		// sample if parent attribute is already set
+		int attr = mSamplingOrder[k];
+		value = -1;
+		do
 		{
-			// sample if parent attribute is already set
-			if ((observation[mParentIndex[attr]] != -1) && (observation[attr]==-1))
-			{
-				value = -1;
-				do
-				{
-					value = int((double)mAttributeSizes[attr]*rand()/(RAND_MAX + 1.0));
-					if (((double)rand()/(RAND_MAX + 1.0)) > mProbabilityModel[attr][value][observation[mParentIndex[attr]]]) value = -1;
-				} while (value == -1);
-				observation[attr] = value;
-				attributesSampled++;
-			}
-		}
+			value = int((double)mAttributeSizes[attr]*rand()/(RAND_MAX + 1.0));
+			if (((double)rand()/(RAND_MAX + 1.0)) > mProbabilityModel[attr][value][observation[mParentIndex[attr]]]) value = -1;
+		} while (value == -1);
+		observation[attr] = value;
 	}
 
 	// calculate observation likelihood
@@ -480,4 +506,44 @@ double ChowLiuTree::sampleNewPlaceObservation(InterfaceDetectorModel* detectorMo
 	}
 
 	return p_Zk_Lu;
+}
+
+
+double ChowLiuTree::meanFieldNewPlaceObservation(InterfaceDetectorModel* detectorModel, const std::vector<int>& observation)
+{
+	// calculate observation likelihood
+	// p_Zk_Lu = p(Z_k | L_u) is the observation likelihood of a randomly sampled place L_u
+	//double p_Zk_Lu = 1.0;
+	double p_Zk_Lu_log = 0.0;
+
+	double p_zr_Lu = 0.0;	// = p(z_r | L_u), i.e. the marginal probability of the root observation attribute (i.e. z_0) given the unknown location L_u
+	for (int s=0; s<mAttributeSizes[0]; s++)
+	{
+		p_zr_Lu += detectorModel->getDetectorProbability(observation[0], s) * mMarginalPriorProbability[0][s];	// equation (8) with marginals for the place
+	}
+	//p_Zk_Lu *= p_zr_Lu;
+	p_Zk_Lu_log += log(p_zr_Lu);
+
+	for (unsigned int attr=1; attr<mAttributeSizes.size(); attr++)
+	{
+		double p_zq_zpq_Lu = 0.0;	// = p(z_q | z_p_q, L_u), i.e. the value calculated in equation (11)
+
+		for (int s=0; s<mAttributeSizes[attr]; s++)
+		{
+			double alpha = mMarginalPriorProbability[attr][observation[attr]] * detectorModel->getDetectorProbability((observation[attr]+1)%2, s)
+				* mProbabilityModel[attr][(observation[attr]+1)%2][observation[mParentIndex[attr]]];	// equation (13)
+			double beta = mMarginalPriorProbability[attr][(observation[attr]+1)%2] * detectorModel->getDetectorProbability(observation[attr], s)
+				* mProbabilityModel[attr][observation[attr]][observation[mParentIndex[attr]]];		// equation (14)
+
+			double p_zq_eq_zpq = 1/(1+alpha/beta);	// = p(z_q | e_q, z_p_q), i.e. the probability calculated in equation (12)
+
+			p_zq_zpq_Lu += p_zq_eq_zpq * mMarginalPriorProbability[attr][s];	// equation (11) with marginals for the place
+		}
+
+		//p_Zk_Lu *= p_zq_zpq_Lu;
+		p_Zk_Lu_log += log(p_zq_zpq_Lu);
+	}
+
+	//return p_Zk_Lu;
+	return p_Zk_Lu_log;
 }

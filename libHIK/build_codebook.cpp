@@ -8,12 +8,12 @@
 #include "UseSVM.h"
 
 #include <omp.h>
-#include <cv.h>
+#include <opencv/cv.h>
 
 static int fsize = 0;
 static const int resize_width = 512;
 static int window_size = 16;
-static std::vector<const char*> train_names;
+static std::vector<std::string> train_names;
 static const int upperBound = 129;
 static const int kmeans_stepsize = 24;
 static const int splitlevel = 0;
@@ -99,7 +99,7 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
     cout<<"Now do cluster and generate codewords."<<endl;
   }
   codebook->SetVerbose(true);
-  int valid = codebook->GenerateCodeWords(K,oneclassSVM);
+  int valid = codebook->GenerateCodeWords(K,oneclassSVM, 1);
   if(splitlevel==0) fsize=valid;
   else if(splitlevel==1) fsize=valid*6;
   else if(splitlevel==2) fsize=valid*31;
@@ -143,11 +143,56 @@ int main(int argc, char** argv)
     img_num_str.insert(0, num_zeros, '0');
     // Build the full path to the image
     image_name << train_img_path << img_num_str << ".jpg";
-    train_names.push_back(image_name.str().c_str());
+    train_names.push_back(image_name.str());
+	//std::cout << (train_names[i-1]) << "\n";
   }
   // Build the Codebook
   CodeBook * codebook = CodeBookEngine(codebook_type, feature_type, K, useSobel,
                                        one_class_SVM, fsize);
+
+  // Build the feature vectors for the test images
+  cout<<"Now generating feature vectors for training data."<<endl;
+  Array2d<double> train_data;
+  train_data.Create(num_train_images, fsize);
+  StartOfDuration();
+#pragma omp parallel for
+  for(int i=1; i <= num_train_images;i++) {
+    // Create a zero padded list
+    stringstream img_num;
+    stringstream image_name;
+    img_num << i;
+    string img_num_str = img_num.str();
+    int num_zeros = padding_size - img_num_str.size();
+    img_num_str.insert(0, num_zeros, '0');
+    // Build the full path to the image
+    image_name << train_img_path << img_num_str << ".jpg";
+    codebook->TranslateOneImage(image_name.str().c_str(),
+                                stepSize, splitlevel, train_data.p[i-1],
+                                fsize, normalize, ratio, scaleChanges, true);
+    if(omp_get_thread_num()==0 && i%10==0) {
+      cout<<".";
+    }
+    cout.flush();
+  }
+
+  cout << endl;
+  cout << "Generated in "<< EndOfDuration()/1000 << " seconds."
+       << endl;
+  cout << "--------------------------------------------------------------------------"
+       << endl;
+
+  // Now write this stuff to disk
+  stringstream ss1;
+  ss1 << out_path.c_str() << "_train.txt";
+  ofstream out1(ss1.str().c_str());
+  out1 << train_data.nrow << " " << train_data.ncol << std::endl;
+  for(int i = 0; i < train_data.nrow; i++)
+  {
+    for(int j = 0; j < train_data.ncol; j++)
+      out1 << train_data.p[i][j] << " ";
+    out1 << endl;
+  }
+  train_data.Clear();
 
   // Build the feature vectors for the test images
   cout<<"Now generating feature vectors for testing data."<<endl;
@@ -166,7 +211,7 @@ int main(int argc, char** argv)
     // Build the full path to the image
     image_name << test_img_path << img_num_str << ".jpg";
     codebook->TranslateOneImage(image_name.str().c_str(),
-                                stepSize, splitlevel, test_data.p[i],
+                                stepSize, splitlevel, test_data.p[i-1],
                                 fsize, normalize, ratio, scaleChanges, true);
     if(omp_get_thread_num()==0 && i%10==0) {
       cout<<".";
@@ -181,7 +226,10 @@ int main(int argc, char** argv)
        << endl;
 
   // Now write this stuff to disk
-  ofstream out(out_path.c_str());
+  stringstream ss;
+  ss << out_path.c_str() << "_test.txt";
+  ofstream out(ss.str().c_str());
+  out << test_data.nrow << " " << test_data.ncol << std::endl;
   for(int i = 0; i < test_data.nrow; i++)
   {
     for(int j = 0; j < test_data.ncol; j++)
@@ -189,5 +237,6 @@ int main(int argc, char** argv)
     out << endl;
   }
 
+  getchar();
   return 0;
 }

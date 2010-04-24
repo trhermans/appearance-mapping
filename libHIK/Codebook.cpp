@@ -141,22 +141,22 @@ void CodeBook::TranslateOneImage(const char* filename,
     }
     delete feature; feature = NULL;
 
-    if(normalize) Normalize_L1(p,validcenters);
+    /////if(normalize) Normalize_L1(p,validcenters);
     // normalize if necessary, and weight the codewords differently depending on
     // depth in the hierarchy
     if(splitlevel>=1)
     {
-        if(normalize) for(int j=0;j<5;j++) Normalize_L1(p+validcenters+
-                                                        validcenters*j,
-                                                        validcenters);
+        /////if(normalize) for(int j=0;j<5;j++) Normalize_L1(p+validcenters+
+        //                                                validcenters*j,
+        //                                                validcenters);
         for(int j=0;j<5*validcenters;j++) p[validcenters+j] *= ratio;
     }
     if(splitlevel>=2)
     {
-        if(normalize) for(int j=0;j<25;j++) Normalize_L1(p+validcenters+
-                                                         validcenters*5+
-                                                         validcenters*j,
-                                                         validcenters);
+        /////if(normalize) for(int j=0;j<25;j++) Normalize_L1(p+validcenters+
+        //                                                 validcenters*5+
+        //                                                 validcenters*j,
+        //                                                 validcenters);
         for(int j=0;j<25*validcenters;j++) p[validcenters+validcenters*5+j] *=
                                                (ratio*ratio);
     }
@@ -201,7 +201,7 @@ LinearCodes::~LinearCodes()
 {
 }
 
-void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
+void LinearCodes::GenerateClusterData(const std::vector<std::string>& files,
                                       const int stepSize)
 {
     BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
@@ -209,7 +209,7 @@ void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
     int added = 0;
     for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
     {
-        const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth); // assign image to the feature extractor
+        const IntImage<double>& img = feature->AssignFile(files[imgindex].c_str(),resizeWidth); // assign image to the feature extractor
         int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1); // number of features generated for this image
         if(added+num_subwin>features.nrow) // increase capacity of 'features' if necessary
             features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
@@ -269,14 +269,14 @@ HistogramCodes::~HistogramCodes()
 {
 }
 
-void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,const int stepSize)
+void HistogramCodes::GenerateClusterData(const std::vector<std::string>& files,const int stepSize)
 {
     BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
     features.Create(1000,feature->Length());
     int added = 0;
     for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
     {
-        const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth);
+        const IntImage<double>& img = feature->AssignFile(files[imgindex].c_str(),resizeWidth);
         int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1);
         if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
         for(int i=1;i+windowSize<img.nrow;i+=stepSize)

@@ -141,7 +141,6 @@ void VisualCodebook::constructCodebook(string img_path, int img_count, int mode)
 	  raw_descriptors.clear();
   }
 
-
   CvMat* clusters = cvCreateMat(num_desc, 1, CV_32SC1);
   CvMat* cv_centers = cvCreateMat(k_, desc_size_, CV_32FC1);
 

@@ -20,7 +20,7 @@ double PlaceModel::getWordProbability(int ei, int es, int Lj)
 	return mWordProbability[Lj][ei][es];
 }
 
-void PlaceModel::addLocation(std::vector<std::vector<double> >& marginalProbabilities)
+void PlaceModel::addLocation(std::vector<std::vector<double> > marginalProbabilities)
 {
 	mWordProbability.push_back(marginalProbabilities);
 	
