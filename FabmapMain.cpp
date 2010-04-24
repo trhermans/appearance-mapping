@@ -26,11 +26,29 @@ int main()
 	// -> either train a new model (further parameter infos in FABMAP.h)
 	TheTimer.start();
 //	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", false);
-	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", false);
-	std::cout << "ChowLiu tree learning needed " << TheTimer.getRuntime() << "s." << std::endl;
+//	FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", false);
+//	FABMAP fm(1.0, 500, FABMAP::NAIVEBAYES, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_Bayes_cbCityCentre_c100.txt", false);
+//	FABMAP fm(1.0, 200, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "HIK/_train_HIK_cbCityCentre_c100.txt", "HIK/_ChowLiuTree_cbCityCentre_c100.txt", false);
 
 	// -> or load an existing model from file (if the first option was run once before)
-	//FABMAP fm(1.0, 500, FABMAP::CHOWLIU, 0.0, 0.39, "_City_Centre_c10000.codebook", "training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_cbCityCentre_c10000.txt", true);  //0.99999999999999999999
+//	FABMAP fm(0.99, 200, FABMAP::CHOWLIU, 0.0, 0.61, "_CityCentre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_ChowLiuTree_surf_cbCityCentre_c10000.txt", true);  //0.99999999999999999999
+//	FABMAP fm(1.0, 200, FABMAP::NAIVEBAYES, 0.0, 0.39, "_CityCentre_c10000.codebook", "_training_data_cbCityCentre_c10000.txt", "_Bayes_surf_cbCityCentre_c10000.txt", true);
+//	FABMAP fm(1.0, 200, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_data_cbCityCentre_c100.txt", "_ChowLiuTree_cbCityCentre_c100.txt", true);  //0.99999999999999999999
+//	FABMAP fm(1.0, 200, FABMAP::CHOWLIU, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_ox_cbCityCentre_c11000.txt", "_ChowLiuTree_ox_cbCityCentre_c11000.txt", true);
+//	FABMAP fm(1.0, 200, FABMAP::NAIVEBAYES, 0.0, 0.39, "_CityCentre_c100.codebook", "_training_ox_cbCityCentre_c11000.txt", "_Bayes_ox_cbCityCentre_c11000.txt", true);
+//	FABMAP fm(1.0, 200, FABMAP::NAIVEBAYES, 0.0, 0.39, "_CityCentre_c100.codebook", "_cc-train-centrist-500-kmeans.txt", "_Bayes_CENTRIST_cbCityCentre_c500.txt", true);
+//	FABMAP fm(0.99, 200, FABMAP::CHOWLIU, 0.0, 0.61, "_CityCentre_c100.codebook", "_cc-train-centrist-500-kmeans.txt", "_ChowLiuTree_CENTRIST_cbCityCentre_c500.txt", true);
+//	FABMAP fm(0.99, 200, FABMAP::CHOWLIU, 0.0, 0.61, "_CityCentre_c100.codebook", "_train_centrist_cbCityCentre_c2000.txt", "_ChowLiuTree_CENTRIST_cbCityCentre_c2000.txt", true);
+//	FABMAP fm(1.0, 200, FABMAP::NAIVEBAYES, 0.0, 0.39, "_CityCentre_c100.codebook", "_train_centrist_cbCityCentre_c2000.txt", "_Bayes_CENTRIST_cbCityCentre_c2000.txt", false);
+//	FABMAP fm(1.0, 200, FABMAP::CHOWLIU, 0.0, 0.61, "_CityCentre_c100.codebook", "_training_ox_cbCityCentre_c11000.txt", "_ChowLiuTree_ox_cbCityCentre_c11000.txt", true);
+//	FABMAP fm(0.99, 200, FABMAP::CHOWLIU, 0.0, 0.61, "_CityCentre_c100.codebook", "_training_data_ori_cbOri_c11000.txt", "_ChowLiuTree_ori_cbOri_c11000.txt", true);
+//	FABMAP fm(0.99, 2859, FABMAP::NAIVEBAYES, 0.0, 0.61, "_CityCentre_c100.codebook", "_training_data_ori_cbOri_c11000.txt", "_Bayes_ori_cbOri_c11000.txt", true);
+//	FABMAP fm(0.99, 2859, FABMAP::NAIVEBAYES, 0.0, 0.61, "_CityCentre_c100.codebook", "_training_data_NewCollegeOri_cbOri_c11000.txt", "_Bayes_NCOri_cbOri_c11000.txt", false);
+//	FABMAP fm(0.99, 2859, FABMAP::NAIVEBAYES, 0.0, 0.61, "_CityCentre_c100.codebook", "nc-centrist-1000.train", "_Bayes_centrist_cbNC_c1000.txt", true);
+//	FABMAP fm(0.99, 2474, FABMAP::NAIVEBAYES, 0.0, 0.61, "_CityCentre_c100.codebook", "cc-SIFT-kmeans-3000-1.train", "_Bayes_surf_cbCC_c3000.txt", false);
+	FABMAP fm(0.99, 2146, FABMAP::NAIVEBAYES, 0.0, 0.61, "_CityCentre_c100.codebook", "nc-centrist-11000.train", "_Bayes_centrist_cbNC_c11000.txt", false);
+
+	std::cout << "Observation model learning needed " << TheTimer.getRuntime() << "s." << std::endl;
 
 	// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -44,7 +62,17 @@ int main()
 	// -> or you load the pre-built histogram data from file (be careful to build it from the test image set with the training set word clusters!),
 	//    then provide the file with the histogram data + -1 (indicates pre-built file to the function) + the probability at which a loop closure is accepted
 //	fm.onlineApplication("_test_data_NewCollege_cbCityCentre_c10000.txt", -1, 0.99);
-	fm.onlineApplication("_test_data_NewCollege_cbCityCentre_c100.txt", -1, 0.99);
+//	fm.onlineApplication("_test_data_NewCollege_cbCityCentre_c100.txt", -1, 0.0);
+//	fm.onlineApplication("HIK/_test_HIK_NewCollege_cbCityCentre_c100.txt", -1, 0.0);
+//	fm.onlineApplication("_training_ox_NewCollege_cbOri_c11000.txt", -1, 0.99);
+//	fm.onlineApplication("_nc-test-centrist-500-kmeans.txt", -1, 0.8);
+//	fm.onlineApplication("_test_centrist_NewCollege_cbCityCentre_c2000.txt", -1, 0.99);
+//	fm.onlineApplication("_training_ox_NewCollege_cbOri_c11000.txt", -1, 0.99);
+//	fm.onlineApplication("_training_data_NewCollegeOri_cbOri_c11000.txt", -1, 0.99);
+//	fm.onlineApplication("cc-centrist-1000.test", -1, 0.99);
+//	fm.onlineApplication("_training_data_CityCentreOri_cbOri_c11000.txt", -1, 0.99);
+//	fm.onlineApplication("nc-SIFT-kmeans-3000-1.test", -1, 0.99);
+	fm.onlineApplication("cc-centrist-11000-1.test", -1, 0.99);
 
 	std::cout << "Fabmap needed " << TheTimer.getRuntime() << "s." << std::endl;
 

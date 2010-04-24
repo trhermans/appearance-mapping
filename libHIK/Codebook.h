@@ -55,7 +55,7 @@ class CodeBook
   virtual ~CodeBook();
  public:
   // Generate set of features for clustering from 'files' (images), the sampling step size is 'stepSize'
-  virtual void GenerateClusterData(const std::vector<const char*>& files,const int stepSize) = 0;
+	 virtual void GenerateClusterData(const std::vector<std::string/*const char**/>& files,const int stepSize) = 0;
   // do clustering and generate data structures that define codewords
   virtual int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10) = 0;
   // map an image ('filename') to a feature vector 'p' (with length 'fsize') in our spatial arrangement (with a 'splitlevel' depth hierarchy) -- see our ICCV 2009 paper
@@ -88,7 +88,7 @@ class LinearCodes: public CodeBook
   LinearCodes(const DESCRIPTOR_TYPE _feature_type,const bool _useSobel,const int _resizeWidth,const int _windowSize,const int _L1_norm,const bool _useMedian);
   ~LinearCodes();
  public:
-  void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
+	 void GenerateClusterData(const std::vector<std::string>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
  public:
@@ -106,7 +106,7 @@ class HistogramCodes: public CodeBook
   HistogramCodes(const DESCRIPTOR_TYPE _feature_type,const bool _useSobel,const int _resizeWidth,const int _windowSize,const int _L1_norm,const int _upper_bound);
   ~HistogramCodes();
  public:
-  void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
+	 void GenerateClusterData(const std::vector<std::string>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
  public:
@@ -120,7 +120,7 @@ class LocalCodes: public CodeBook
   LocalCodes(const bool _useSobel,const int _resizeWidth);
   ~LocalCodes();
  public:
-  void GenerateClusterData(const std::vector<const char*>& files,const int stepSize) { }
+	 void GenerateClusterData(const std::vector<std::string>& files,const int stepSize) { }
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10) { return 256; }
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
 };

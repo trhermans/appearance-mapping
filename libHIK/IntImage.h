@@ -9,9 +9,9 @@
 #include <string>
 #include <cmath>
 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+#include <opencv/cv.h>
+#include <opencv/cxcore.h>
+#include <opencv/highgui.h>
 
 #include "mdarray.h"
 
@@ -60,6 +60,7 @@ bool IntImage<T>::Load(const std::string& filename,const char channel)
     IplImage* img;
     IplImage* img2;
 
+	std::cout << filename.c_str() << "\n";
     img = cvLoadImage(filename.c_str());
     if(img==NULL) return false;
 

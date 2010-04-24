@@ -6,6 +6,8 @@
 
 #include <vector>
 #include <fstream>
+#include <strstream>
+
 #include "InterfaceObservationLikelihood.h"
 #include "ChowLiuTree.h"
 #include "NaiveBayes.h"
@@ -14,6 +16,7 @@
 #include "InterfaceNormalizationTerm.h"
 #include "InterfaceLocationPrior.h"
 #include "NormalizationTermSampling.h"
+#include "NormalizationTermMeanField.h"
 #include "SimpleLocationPrior.h"
 #include "DetectorModel.h"
 #include "PlaceModel.h"
@@ -42,19 +45,22 @@ public:
 	// or
 	// trainingDataFile is the path where the histograms for the images are already stored (i.e. the bag-of-words stage of the image features is already done), then choose numberOfImages=-1 to indicate that
 	// loopClosureThreshold is the probability which must be exceeded by p(L_i | Z_k) in order to accept a location L_i as loop closure
-	void onlineApplication(std::string imagePath_or_trainingDataFile, int numberOfImages, double loopClosureThreshold);
+	void onlineApplication(std::string imagePath_or_testDataFile, int numberOfImages, double loopClosureThreshold);
 
 	enum ObservationLikelihoodModel {NAIVEBAYES, CHOWLIU};
 
 private:
 	// accomplishes all the offline learning (starts from image files) which is necessary before the algorithm can be applied
-	void offlinePreparationTrain(int approximationModel, std::string trainingDataFile, std::string modelFile);
+	void offlinePreparationTrain(int approximationModel, std::vector<std::vector<int> >& trainingData, std::string modelFile);
 
 	// loads existing offline-learned models from file which is necessary before the algorithm can be applied
-	void offlinePreparationLoad(int approximationModel, std::string modelFile);
+	void offlinePreparationLoad(int approximationModel, std::vector<std::vector<int> >& trainingData, std::string modelFile);
 
 	// the smoothing factor applied in equation (18)
 	double mSigma;
+
+	// only for the old version when test images are used and not preprocessed data files
+	std::string mCodebookFile;
 
 	InterfaceObservationLikelihood* mObservationLikelihood;
 	InterfaceDetectorModel* mDetectorModel;

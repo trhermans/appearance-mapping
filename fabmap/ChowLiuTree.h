@@ -22,22 +22,26 @@ class ChowLiuTree : public InterfaceObservationLikelihood
 {
 public :
 	// constructor which trains the model using the training_data and saves the model into pCLTreeFilename
-	ChowLiuTree(std::vector<std::vector<int> > training_data, std::string pCLTreeFilename);
+	ChowLiuTree(std::vector<std::vector<int> >& training_data, std::string pCLTreeFilename, bool calculateModel=false);
 	// constructor which loads the model from pCLTreeFilename
 	ChowLiuTree(std::string pCLTreeFilename);
 	~ChowLiuTree();
 
 	// returns p(Z_k | L_i) as defined in equations (9)-(14) for the Chow Liu trees, i=location, Z_k=observations
-	virtual double evaluate(std::vector<int> observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel);
+	double evaluate(std::vector<int>& observations, int location, InterfaceDetectorModel* detectorModel, InterfacePlaceModel* placeModel);
 
 	// returns the marginal probability for observing a single attribute p(z_attr = val)
-	virtual double getMarginalPriorProbability(int attr, int val);
+	double getMarginalPriorProbability(int attr, int val);
 
 	// returns the whole marginal probabilities vector
-	virtual std::vector<std::vector<double> >& getMarginalPriorProbabilities() { return mMarginalPriorProbability; };
+	std::vector<std::vector<double> >& getMarginalPriorProbabilities() { return mMarginalPriorProbability; };
 
 	// returns p(Z_k | L_u) for a randomly sampled place L_u with randomly sampled obervations Z_k as needed in equation (17)
-	virtual double sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel);
+	// observation = Z_k
+	double sampleNewPlaceObservation(InterfaceDetectorModel* detectorModel, std::vector<int>& observation);
+
+	// returns p(Z_k | L_{avg}) for the average place L_{avg} as needed in equation (16)
+	double meanFieldNewPlaceObservation(InterfaceDetectorModel* detectorModel, const std::vector<int>& observation);
 
 private:
 	std::vector< std::vector<double> > calculateMutualInformation();
@@ -67,6 +71,9 @@ private:
 
 	// stores the marginal probability for observing a single attribute p(z_attr = val) as mMarginalPriorProbability[attr][val]
 	std::vector<std::vector<double> > mMarginalPriorProbability;
+
+	// stores the order in which attributes can be sampled (i.e. when the parent is known)
+	std::vector<int> mSamplingOrder;
 };
 
 #endif /* CHOWLIUTREE_H_ */

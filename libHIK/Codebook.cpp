@@ -141,6 +141,7 @@ void CodeBook::TranslateOneImage(const char* filename,
   }
   delete feature; feature = NULL;
 
+<<<<<<< HEAD
   if(normalize) Normalize_L1(p,validcenters);
   // normalize if necessary, and weight the codewords differently depending on
   // depth in the hierarchy
@@ -285,6 +286,25 @@ void CodeBook::TranslateOneHarrisImage(const char* filename,
                                                      validcenters*j,
                                                      validcenters);
     for(int j=0;j<25*validcenters;j++) p[validcenters+validcenters*5+j] *=
+=======
+    /////if(normalize) Normalize_L1(p,validcenters);
+    // normalize if necessary, and weight the codewords differently depending on
+    // depth in the hierarchy
+    if(splitlevel>=1)
+    {
+        /////if(normalize) for(int j=0;j<5;j++) Normalize_L1(p+validcenters+
+        //                                                validcenters*j,
+        //                                                validcenters);
+        for(int j=0;j<5*validcenters;j++) p[validcenters+j] *= ratio;
+    }
+    if(splitlevel>=2)
+    {
+        /////if(normalize) for(int j=0;j<25;j++) Normalize_L1(p+validcenters+
+        //                                                 validcenters*5+
+        //                                                 validcenters*j,
+        //                                                 validcenters);
+        for(int j=0;j<25*validcenters;j++) p[validcenters+validcenters*5+j] *=
+>>>>>>> fabmap
                                                (ratio*ratio);
     }
 }
@@ -328,7 +348,7 @@ LinearCodes::~LinearCodes()
 {
 }
 
-void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
+void LinearCodes::GenerateClusterData(const std::vector<std::string>& files,
                                       const int stepSize)
 {
   BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
@@ -342,6 +362,7 @@ void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
       features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
     for(int i=1;i+windowSize<img.nrow;i+=stepSize)
     {
+<<<<<<< HEAD
       for(int j=1;j+windowSize<img.ncol;j+=stepSize)
       {   // LinearCodes use real valued ('D'--double) version of features
         const double* p = feature->D_feature(i,i+windowSize,j,j+windowSize);
@@ -349,6 +370,22 @@ void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
         std::copy(p,p+feature->Length(),features.p[added]);
         added++;
       }
+=======
+        const IntImage<double>& img = feature->AssignFile(files[imgindex].c_str(),resizeWidth); // assign image to the feature extractor
+        int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1); // number of features generated for this image
+        if(added+num_subwin>features.nrow) // increase capacity of 'features' if necessary
+            features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
+        for(int i=1;i+windowSize<img.nrow;i+=stepSize)
+        {
+            for(int j=1;j+windowSize<img.ncol;j+=stepSize)
+            {   // LinearCodes use real valued ('D'--double) version of features
+                const double* p = feature->D_feature(i,i+windowSize,j,j+windowSize);
+                if(p[0]<0) continue; // NOTE: special case -- image patch nearly uniform
+                std::copy(p,p+feature->Length(),features.p[added]);
+                added++;
+            }
+        }
+>>>>>>> fabmap
     }
   }
   features.AdjustCapacity(added);
@@ -399,7 +436,7 @@ HistogramCodes::~HistogramCodes()
 {
 }
 
-void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,const int stepSize)
+void HistogramCodes::GenerateClusterData(const std::vector<std::string>& files,const int stepSize)
 {
   BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
   features.Create(1000,feature->Length());
@@ -412,13 +449,19 @@ void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,c
     if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
     for(int i=1;i+windowSize<img.nrow;i+=stepSize)
     {
-      for(int j=1;j+windowSize<img.ncol;j+=stepSize)
-      {   // LinearCodes use discrete valued ('I'--integer) version of features
-        const int* p = feature->I_feature(i,i+windowSize,j,j+windowSize);
-        if(p[0]<0) continue; // NOTE: special case
-        std::copy(p,p+feature->Length(),features.p[added]);
-        added++;
-      }
+        const IntImage<double>& img = feature->AssignFile(files[imgindex].c_str(),resizeWidth);
+        int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1);
+        if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
+        for(int i=1;i+windowSize<img.nrow;i+=stepSize)
+        {
+            for(int j=1;j+windowSize<img.ncol;j+=stepSize)
+            {   // LinearCodes use discrete valued ('I'--integer) version of features
+                const int* p = feature->I_feature(i,i+windowSize,j,j+windowSize);
+                if(p[0]<0) continue; // NOTE: special case
+                std::copy(p,p+feature->Length(),features.p[added]);
+                added++;
+            }
+        }
     }
   }
   features.AdjustCapacity(added);
