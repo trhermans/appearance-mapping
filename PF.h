@@ -6,6 +6,15 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <cmath>
+
+#ifdef __APPLE__
+static inline float sincosf(float h, float* sinh, float* cosh)
+{
+  *sinh = std::sin(h);
+  *cosh = std::cos(h);
+}
+#endif
 
 // Odometery change
 class MotionModel

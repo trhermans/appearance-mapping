@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 CMD_BASE = "./build_codebook "
-PREFIX = "/home/thermans/src/fab-data/"
+PREFIX = "/Users/Tucker/src/fab-data/"
 NC_IMAGES = PREFIX + "new-college/Images/"
 NC_NUM_IMAGES = "2146"
 CC_IMAGES = PREFIX + "city-centre/Images/"
@@ -10,9 +10,10 @@ USE_HARRIS = True
 
 def main():
     #ks = [2000, 3000, 4000, 6000, 7000]
-    descriptors = ["SIFT","CENTRSIT"]
+    #descriptors = ["SIFT","CENTRIST"]
+    descriptors = ["CENTRIST"]
     cluster = "kmeans" # kmeans kmedian HIK
-    use_harris = "1" # 0 1
+    use_harris = "0" # 0 1
     k = 11000
     for descriptor in descriptors:
         train_file = PREFIX + "nc-" + descriptor + "-" + cluster + "-" + str(k)\

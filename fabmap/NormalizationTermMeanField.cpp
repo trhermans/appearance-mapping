@@ -1,7 +1,7 @@
 // author: Richard
 
 #include "NormalizationTermMeanField.h"
-
+#include "float.h"
 NormalizationTermMeanField::NormalizationTermMeanField()
 {
 

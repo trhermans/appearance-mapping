@@ -1,7 +1,6 @@
 #include "PF.h"
 #include <time.h> // for srand(time(NULL))
 #include <cstdlib> // for MAX_RAND
-#include <cmath>
 
 using namespace std;
 
