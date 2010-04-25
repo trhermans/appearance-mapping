@@ -55,6 +55,8 @@ class CodeBook
   virtual ~CodeBook();
  public:
   // Generate set of features for clustering from 'files' (images), the sampling step size is 'stepSize'
+  virtual void GenerateSURFClusterData(const std::vector<const char*>& files) = 0;
+
   virtual void GenerateClusterData(const std::vector<const char*>& files,const int stepSize) = 0;
   // do clustering and generate data structures that define codewords
   virtual int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10) = 0;
@@ -72,6 +74,11 @@ class CodeBook
                                        const int fsize,const bool normalize,
                                        const double ratio,int scales,
                                        bool useBinary=false) const;
+  virtual void TranslateOneSURFImage(const char* filename,const int stepSize,
+                                     const int splitlevel,double* p,
+                                     const int fsize,const bool normalize,
+                                     const double ratio,int scales,
+                                     bool useBinary=false) const;
   // Translate an image into its an image, where a color corresponds to a visual code word
   IplImage* TranslateOneImage(const char* filename,const int K) const;
   // with an image already assigned to 'feature', find the right codeword for patch [x1..x2)X[y1..y2)
@@ -88,6 +95,7 @@ class LinearCodes: public CodeBook
   LinearCodes(const DESCRIPTOR_TYPE _feature_type,const bool _useSobel,const int _resizeWidth,const int _windowSize,const int _L1_norm,const bool _useMedian);
   ~LinearCodes();
  public:
+  void GenerateSURFClusterData(const std::vector<const char*>& files);
   void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
@@ -106,6 +114,7 @@ class HistogramCodes: public CodeBook
   HistogramCodes(const DESCRIPTOR_TYPE _feature_type,const bool _useSobel,const int _resizeWidth,const int _windowSize,const int _L1_norm,const int _upper_bound);
   ~HistogramCodes();
  public:
+  void GenerateSURFClusterData(const std::vector<const char*>& files);
   void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
@@ -120,6 +129,7 @@ class LocalCodes: public CodeBook
   LocalCodes(const bool _useSobel,const int _resizeWidth);
   ~LocalCodes();
  public:
+  void GenerateSURFClusterData(const std::vector<const char*>& files) { }
   void GenerateClusterData(const std::vector<const char*>& files,const int stepSize) { }
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10) { return 256; }
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;

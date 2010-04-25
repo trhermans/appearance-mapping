@@ -69,7 +69,8 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
                          int K,
                          const bool useSobel,
                          const bool oneclassSVM,
-                         int& fsize)
+                         int& fsize,
+                         const bool use_surf=false)
 {
   CodeBook* codebook = NULL;
   switch(codebookType) {
@@ -97,8 +98,11 @@ CodeBook* CodeBookEngine(const CodeBook::CODEBOOK_TYPE codebookType,
      codebookType==CodeBook::CODEBOOK_KMEDIAN ||
      codebookType==CodeBook::CODEBOOK_HIK) {
     cout<<"Generating data for kernel k-means clustering."<<endl;
-    codebook->GenerateClusterData(train_names, kmeans_stepsize);
-    cout<<"Now clustering and generate codewords."<<endl;
+    if (use_surf)
+      codebook->GenerateSURFClusterData(train_names);
+    else
+      codebook->GenerateClusterData(train_names, kmeans_stepsize);
+    cout<<"Now clustering and generating codewords."<<endl;
   }
   codebook->SetVerbose(true);
   int valid = codebook->GenerateCodeWords(K, oneclassSVM);
@@ -125,7 +129,9 @@ int main(int argc, char** argv)
   const CodeBook::CODEBOOK_TYPE codebook_type = FindCodeBook(argv[7]);
   const string train_out_path(argv[8]);
   const string test_out_path(argv[9]);
-  const bool use_harris = atoi(argv[10]);
+  const int use_harris_operator = atoi(argv[10]);
+  const bool use_harris = (use_harris_operator == 1);
+  const bool use_surf = (use_harris_operator == 2);
   const int scaleChanges = 0; // We will densley compute the featuers at a single scale
   const int stepSize = 32;
   const bool useBoth = false;
@@ -134,7 +140,7 @@ int main(int argc, char** argv)
   const double ratio = 1.0;
   const int padding_size = 4;
   train_filenames.resize(num_train_images, " ");
-  char * c = " ";
+  const char * c = " ";
   train_names.resize(num_train_images, c);
 
 #pragma omp parallel for
@@ -155,7 +161,7 @@ int main(int argc, char** argv)
   }
   // Build the Codebook
   CodeBook * codebook = CodeBookEngine(codebook_type, feature_type, K, useSobel,
-                                       one_class_SVM, fsize);
+                                       one_class_SVM, fsize, use_surf);
 
   // Build the feature vectors for the train images
   cout<<"Now generating feature vectors for training data."<<endl;
@@ -170,6 +176,12 @@ int main(int argc, char** argv)
                                         stepSize, splitlevel, train_data.p[i],
                                         fsize, normalize, ratio, scaleChanges,
                                         true);
+    else if (use_surf)
+      codebook->TranslateOneSURFImage(train_names[i],
+                                      stepSize, splitlevel, train_data.p[i],
+                                      fsize, normalize, ratio, scaleChanges,
+                                      true);
+    else
     codebook->TranslateOneImage(train_names[i],
                                 stepSize, splitlevel, train_data.p[i],
                                 fsize, normalize, ratio, scaleChanges, true);

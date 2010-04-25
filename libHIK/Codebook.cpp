@@ -289,6 +289,88 @@ void CodeBook::TranslateOneHarrisImage(const char* filename,
     }
 }
 
+void CodeBook::TranslateOneSURFImage(const char* filename,
+                                     const int stepSize,const int splitlevel,
+                                     double* p,const int fsize,
+                                     const bool normalize,
+                                     const double ratio,
+                                     int scales, bool useBinary) const
+{
+  // we could put 'feature' as a member of the CodeBook class. However,
+  // put it here makes parallel processing (OpenMP) possible
+
+  // generate the right feature extractor
+  BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
+
+  // ratio to shrink the image to a smaller scale & weights at different
+  // scaled version of the image
+  const double scale_change = 0.75;
+  // weight of codewords generated in different resized version of the image
+  double scale = 1;
+  const int window_offset = windowSize / 2;
+  // assign an image to the feature extractor
+  const IntImage<double>* img = &feature->AssignFile(filename,resizeWidth);
+  std::fill(p,p+fsize,0.0);
+  // Extract keypoints from the image
+  IplImage* cv_raw_img = cvLoadImage(filename, IPL_DEPTH_8U);
+  int resizeHeight = (cv_raw_img->width/resizeWidth)*cv_raw_img->height;
+  IplImage* cv_img = cvCreateImage(cvSize(img->ncol, img->nrow),
+                                   IPL_DEPTH_8U, 1);
+  cvResize(cv_raw_img,cv_img);
+  cvReleaseImage(&cv_raw_img);
+  const int hessian_thresh = 500;
+  const bool use128_surf = true;
+
+  CvSeq* keys = 0;
+  CvSeq* descriptors = 0;
+  CvMemStorage* mem  = cvCreateMemStorage(0);
+  CvSURFParams params = cvSURFParams(hessian_thresh, use128_surf);
+  cvExtractSURF(cv_img, 0, &keys, &descriptors, mem, params);
+  CvSeqReader reader;
+  cvStartReadSeq(keys, &reader, 0);
+  for (int j = 0; j < keys->total; ++j)
+  {
+    const CvSURFPoint * key = (const CvSURFPoint*)(reader.ptr);
+    CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
+    int x1 = key->pt.x - window_offset;
+    int x2 = key->pt.x + window_offset;
+    int y1 = key->pt.y - window_offset;
+    int y2 = key->pt.y + window_offset;
+    if( x1 < 1 || x2 + 1 > img->ncol || y1 < 1 || y2 + 1 > img->nrow) continue;
+    // find the right codeword
+    int match = Find_Nearest(y1, y2, x1, x2,feature);
+    // NOTE:special case -- this image patch is nearly uniform
+    if(match<0) continue;
+    if (useBinary)
+      p[match] = 1;
+    else
+      p[match]+=scale; // depth 0 of the hierarchy
+  }
+
+  delete feature; feature = NULL;
+  cvReleaseImage(&cv_img);
+
+  if(normalize) Normalize_L1(p,validcenters);
+  // normalize if necessary, and weight the codewords differently depending on
+  // depth in the hierarchy
+  if(splitlevel>=1)
+  {
+    if(normalize) for(int j=0;j<5;j++) Normalize_L1(p+validcenters+
+                                                    validcenters*j,
+                                                    validcenters);
+    for(int j=0;j<5*validcenters;j++) p[validcenters+j] *= ratio;
+  }
+  if(splitlevel>=2)
+  {
+    if(normalize) for(int j=0;j<25;j++) Normalize_L1(p+validcenters+
+                                                     validcenters*5+
+                                                     validcenters*j,
+                                                     validcenters);
+    for(int j=0;j<25*validcenters;j++) p[validcenters+validcenters*5+j] *=
+                                               (ratio*ratio);
+    }
+}
+
 IplImage* CodeBook::TranslateOneImage(const char* filename,const int K) const
 {
   CvScalar* colors = new CvScalar[K];
@@ -326,6 +408,60 @@ LinearCodes::LinearCodes(const DESCRIPTOR_TYPE _feature_type,
 
 LinearCodes::~LinearCodes()
 {
+}
+
+void LinearCodes::GenerateSURFClusterData(const std::vector<const char*>& files)
+{
+  BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
+  features.Create(1000,feature->Length());
+  int added = 0;
+  const int hessian_thresh = 500;
+  const bool use128_surf = true;
+  const int window_offset = windowSize / 2;
+  int count = 0;
+  for(unsigned int imgindex=0; imgindex < files.size(); imgindex++)
+  {
+    IplImage* cv_raw_img = cvLoadImage(files[imgindex], IPL_DEPTH_8U);
+    const IntImage<double>& img = feature->AssignFile(files[imgindex],
+                                                      resizeWidth);
+    IplImage* cv_img = cvCreateImage(cvSize(img.ncol,img.nrow),
+                                     IPL_DEPTH_8U, 1);
+    cvResize(cv_raw_img,cv_img);
+    cvReleaseImage(&cv_raw_img);
+
+    CvSeq* keys = 0;
+    CvSeq* descriptors = 0;
+    CvMemStorage* mem  = cvCreateMemStorage(0);
+    CvSURFParams params = cvSURFParams(hessian_thresh, use128_surf);
+    cvExtractSURF(cv_img, 0, &keys, &descriptors, mem, params);
+    CvSeqReader key_reader;
+    CvSeqReader reader;
+    cvStartReadSeq(keys, &key_reader, 0);
+    // cout << "Have a total of " << keys->total << " keys." << endl;
+    for (int j = 0; j < keys->total; ++j)
+    {
+      const CvSURFPoint * key = (const CvSURFPoint*)(key_reader.ptr);
+      CV_NEXT_SEQ_ELEM(key_reader.seq->elem_size, key_reader);
+      // const float* p = (const float*)(reader.ptr);
+      // CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
+
+      // Extract feature at this point
+      const int x1 = key->pt.x - window_offset;
+      const int x2 = key->pt.x + window_offset;
+      const int y1 = key->pt.y - window_offset;
+      const int y2 = key->pt.y + window_offset;
+      if( x1 < 1 || x2 + 1 > img.ncol || y1 < 1 || y2 + 1 > img.nrow) continue;
+
+      const double* p = feature->D_feature(y1, y2, x1, x2);
+      if(p[0]<0) continue; // NOTE: special case -- image patch nearly uniform
+      added++;
+      features.AdjustCapacity(1+added);
+      std::copy(p,p+feature->Length(),features.p[added]);
+    }
+    cvReleaseImage(&cv_img);
+  }
+  features.AdjustCapacity(added);
+  delete feature; feature = NULL;
 }
 
 void LinearCodes::GenerateClusterData(const std::vector<const char*>& files,
@@ -401,7 +537,6 @@ HistogramCodes::~HistogramCodes()
 
 void HistogramCodes::GenerateSURFClusterData(const std::vector<const char*>& files)
 {
-  
 }
 
 void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,const int stepSize)
