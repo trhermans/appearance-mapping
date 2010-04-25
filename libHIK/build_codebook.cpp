@@ -16,7 +16,7 @@ static int window_size = 16;
 static std::vector<std::string> train_filenames;
 static std::vector<const char*> train_names;
 static const int upperBound = 129;
-static const int kmeans_stepsize = 24;
+static const int kmeans_stepsize = 32;
 static const int splitlevel = 0;
 static const int L1_norm = 128;
 static bool normalize = false;
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
   const string test_out_path(argv[9]);
   const bool use_harris = atoi(argv[10]);
   const int scaleChanges = 0; // We will densley compute the featuers at a single scale
-  const int stepSize = 8;
+  const int stepSize = 32;
   const bool useBoth = false;
   const bool useSobel = false;
   const bool one_class_SVM = false;
@@ -187,6 +187,7 @@ int main(int argc, char** argv)
 
     // Now write this stuff to disk
   ofstream train_out(train_out_path.c_str());
+  train_out << num_train_images << " " << K << endl;
   for(int i = 0; i < train_data.nrow; i++)
   {
     for(int j = 0; j < train_data.ncol; j++)
@@ -233,6 +234,7 @@ int main(int argc, char** argv)
 
   // Now write this stuff to disk
   ofstream test_out(test_out_path.c_str());
+  test_out << num_test_images << " " << K << endl;
   for(int i = 0; i < test_data.nrow; i++)
   {
     for(int j = 0; j < test_data.ncol; j++)

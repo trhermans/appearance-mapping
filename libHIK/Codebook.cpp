@@ -399,6 +399,11 @@ HistogramCodes::~HistogramCodes()
 {
 }
 
+void HistogramCodes::GenerateSURFClusterData(const std::vector<const char*>& files)
+{
+  
+}
+
 void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,const int stepSize)
 {
   BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
@@ -406,7 +411,7 @@ void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,c
   int added = 0;
   for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
   {
-    cout << files[imgindex] << endl;
+    // cout << files[imgindex] << endl;
     const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth);
     int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1);
     if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));
