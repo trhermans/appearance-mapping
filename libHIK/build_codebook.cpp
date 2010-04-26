@@ -159,6 +159,7 @@ int main(int argc, char** argv)
     train_filenames[i-1] = image_name.str();
     train_names[i-1] = train_filenames[i-1].c_str();
   }
+  static const vector<const char *> train_names_const(train_names);
   // Build the Codebook
   CodeBook * codebook = CodeBookEngine(codebook_type, feature_type, K, useSobel,
                                        one_class_SVM, fsize, use_surf);
@@ -169,26 +170,28 @@ int main(int argc, char** argv)
   train_data.Create(num_train_images, fsize);
   StartOfDuration();
 
+  static const int fsize_const = fsize;
 #pragma omp parallel for
   for(int i=0; i < num_train_images; i++) {
     if (use_harris)
-      codebook->TranslateOneHarrisImage(train_names[i],
+      codebook->TranslateOneHarrisImage(train_names_const[i],
                                         stepSize, splitlevel, train_data.p[i],
-                                        fsize, normalize, ratio, scaleChanges,
-                                        true);
+                                        fsize_const, normalize, ratio,
+                                        scaleChanges, true);
     else if (use_surf)
-      codebook->TranslateOneSURFImage(train_names[i],
+      codebook->TranslateOneSURFImage(train_names_const[i],
                                       stepSize, splitlevel, train_data.p[i],
-                                      fsize, normalize, ratio, scaleChanges,
-                                      true);
+                                      fsize_const, normalize, ratio,
+                                      scaleChanges, true);
     else
-    codebook->TranslateOneImage(train_names[i],
-                                stepSize, splitlevel, train_data.p[i],
-                                fsize, normalize, ratio, scaleChanges, true);
-    // if(omp_get_thread_num()==0 && i%10==0) {
-    //   cout<<".";
-    // }
-    // cout.flush();
+      codebook->TranslateOneImage(train_names_const[i],
+                                  stepSize, splitlevel, train_data.p[i],
+                                  fsize_const, normalize, ratio, scaleChanges,
+                                  true);
+    if(omp_get_thread_num()==0 && i%10==0) {
+      cout<<".";
+    }
+    cout.flush();
   }
 
   cout << endl;
@@ -227,11 +230,18 @@ int main(int argc, char** argv)
     if (use_harris)
       codebook->TranslateOneHarrisImage(image_name.str().c_str(),
                                         stepSize, splitlevel, test_data.p[i-1],
-                                        fsize, normalize, ratio, scaleChanges,
-                                        true);
-    codebook->TranslateOneImage(image_name.str().c_str(),
-                                stepSize, splitlevel, test_data.p[i-1],
-                                fsize, normalize, ratio, scaleChanges, true);
+                                        fsize_const, normalize, ratio,
+                                        scaleChanges, true);
+    else if (use_surf)
+      codebook->TranslateOneSURFImage(image_name.str().c_str(),
+                                      stepSize, splitlevel, test_data.p[i-1],
+                                      fsize_const, normalize, ratio,
+                                      scaleChanges, true);
+    else
+      codebook->TranslateOneImage(image_name.str().c_str(),
+                                  stepSize, splitlevel, test_data.p[i-1],
+                                  fsize_const, normalize, ratio, scaleChanges,
+                                  true);
     // if(omp_get_thread_num()==0 && i%10==0) {
     //   cout<<".";
     // }

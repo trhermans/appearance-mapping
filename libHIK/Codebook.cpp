@@ -308,16 +308,9 @@ void CodeBook::TranslateOneSURFImage(const char* filename,
   // weight of codewords generated in different resized version of the image
   double scale = 1;
   const int window_offset = windowSize / 2;
-  // assign an image to the feature extractor
-  const IntImage<double>* img = &feature->AssignFile(filename,resizeWidth);
   std::fill(p,p+fsize,0.0);
   // Extract keypoints from the image
-  IplImage* cv_raw_img = cvLoadImage(filename, IPL_DEPTH_8U);
-  int resizeHeight = (cv_raw_img->width/resizeWidth)*cv_raw_img->height;
-  IplImage* cv_img = cvCreateImage(cvSize(img->ncol, img->nrow),
-                                   IPL_DEPTH_8U, 1);
-  cvResize(cv_raw_img,cv_img);
-  cvReleaseImage(&cv_raw_img);
+  IplImage* cv_img = cvLoadImage(filename, IPL_DEPTH_8U);
   const int hessian_thresh = 500;
   const bool use128_surf = true;
 
@@ -327,20 +320,14 @@ void CodeBook::TranslateOneSURFImage(const char* filename,
   CvSURFParams params = cvSURFParams(hessian_thresh, use128_surf);
   cvExtractSURF(cv_img, 0, &keys, &descriptors, mem, params);
   CvSeqReader reader;
-  cvStartReadSeq(keys, &reader, 0);
-  for (int j = 0; j < keys->total; ++j)
+  cvStartReadSeq(descriptors, &reader, 0);
+  for (int j = 0; j < descriptors->total; ++j)
   {
-    const CvSURFPoint * key = (const CvSURFPoint*)(reader.ptr);
+    const float * d = (const float*)(reader.ptr);
     CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
-    int x1 = key->pt.x - window_offset;
-    int x2 = key->pt.x + window_offset;
-    int y1 = key->pt.y - window_offset;
-    int y2 = key->pt.y + window_offset;
-    if( x1 < 1 || x2 + 1 > img->ncol || y1 < 1 || y2 + 1 > img->nrow) continue;
     // find the right codeword
-    int match = Find_Nearest(y1, y2, x1, x2,feature);
-    // NOTE:special case -- this image patch is nearly uniform
-    if(match<0) continue;
+    int match = Find_Nearest(d, feature);
+    if (match < 0)  continue;
     if (useBinary)
       p[match] = 1;
     else
@@ -349,7 +336,7 @@ void CodeBook::TranslateOneSURFImage(const char* filename,
 
   delete feature; feature = NULL;
   cvReleaseImage(&cv_img);
-
+  cvReleaseMemStorage(&mem);
   if(normalize) Normalize_L1(p,validcenters);
   // normalize if necessary, and weight the codewords differently depending on
   // depth in the hierarchy
@@ -421,44 +408,46 @@ void LinearCodes::GenerateSURFClusterData(const std::vector<const char*>& files)
   int count = 0;
   for(unsigned int imgindex=0; imgindex < files.size(); imgindex++)
   {
-    IplImage* cv_raw_img = cvLoadImage(files[imgindex], IPL_DEPTH_8U);
-    const IntImage<double>& img = feature->AssignFile(files[imgindex],
-                                                      resizeWidth);
-    IplImage* cv_img = cvCreateImage(cvSize(img.ncol,img.nrow),
-                                     IPL_DEPTH_8U, 1);
-    cvResize(cv_raw_img,cv_img);
-    cvReleaseImage(&cv_raw_img);
+    IplImage* cv_img = cvLoadImage(files[imgindex], IPL_DEPTH_8U);
+    // const IntImage<double>& img = feature->AssignFile(files[imgindex],
+    //                                                   resizeWidth);
+    // IplImage* cv_img = cvCreateImage(cvSize(img.ncol,img.nrow),
+    //                                  IPL_DEPTH_8U, 1);
+    // cvResize(cv_raw_img,cv_img);
+    // cvReleaseImage(&cv_raw_img);
 
     CvSeq* keys = 0;
     CvSeq* descriptors = 0;
     CvMemStorage* mem  = cvCreateMemStorage(0);
     CvSURFParams params = cvSURFParams(hessian_thresh, use128_surf);
     cvExtractSURF(cv_img, 0, &keys, &descriptors, mem, params);
-    CvSeqReader key_reader;
+    // CvSeqReader key_reader;
+    // cvStartReadSeq(keys, &key_reader, 0);
     CvSeqReader reader;
-    cvStartReadSeq(keys, &key_reader, 0);
-    // cout << "Have a total of " << keys->total << " keys." << endl;
+    cvStartReadSeq(descriptors, &reader, 0);
+    features.AdjustCapacity(1+added+keys->total);
     for (int j = 0; j < keys->total; ++j)
     {
-      const CvSURFPoint * key = (const CvSURFPoint*)(key_reader.ptr);
-      CV_NEXT_SEQ_ELEM(key_reader.seq->elem_size, key_reader);
-      // const float* p = (const float*)(reader.ptr);
-      // CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
+      // const CvSURFPoint * key = (const CvSURFPoint*)(key_reader.ptr);
+      // CV_NEXT_SEQ_ELEM(key_reader.seq->elem_size, key_reader);
+      const float* p = (const float*)(reader.ptr);
+      CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
 
       // Extract feature at this point
-      const int x1 = key->pt.x - window_offset;
-      const int x2 = key->pt.x + window_offset;
-      const int y1 = key->pt.y - window_offset;
-      const int y2 = key->pt.y + window_offset;
-      if( x1 < 1 || x2 + 1 > img.ncol || y1 < 1 || y2 + 1 > img.nrow) continue;
+      // const int x1 = key->pt.x - window_offset;
+      // const int x2 = key->pt.x + window_offset;
+      // const int y1 = key->pt.y - window_offset;
+      // const int y2 = key->pt.y + window_offset;
+      // if( x1 < 1 || x2 + 1 > img.ncol || y1 < 1 || y2 + 1 > img.nrow) continue;
 
-      const double* p = feature->D_feature(y1, y2, x1, x2);
-      if(p[0]<0) continue; // NOTE: special case -- image patch nearly uniform
-      added++;
-      features.AdjustCapacity(1+added);
+      // const double* p = feature->D_feature(y1, y2, x1, x2);
+      // if(p[0]<0) continue; // NOTE: special case -- image patch nearly uniform
       std::copy(p,p+feature->Length(),features.p[added]);
+      added++;
     }
     cvReleaseImage(&cv_img);
+    cvReleaseMemStorage(&mem);
+    cout << "Added image " << imgindex << endl;
   }
   features.AdjustCapacity(added);
   delete feature; feature = NULL;
@@ -526,6 +515,16 @@ int LinearCodes::Find_Nearest(const int x1,const int x2,const int y1,const int y
     return Linear_Find_Nearest(p,eval,feature->Length(),validcenters,rho.buf,useMedian);
 }
 
+int LinearCodes::Find_Nearest(const float* d, BaseFeature* feature) const
+{
+  double* p = new double[feature->Length()];
+  std::copy(d, d+feature->Length(), p);
+  const int return_val = Linear_Find_Nearest(p,eval, feature->Length(),
+                                             validcenters, rho.buf, useMedian);
+  delete p;
+  return return_val;
+}
+
 HistogramCodes::HistogramCodes(const DESCRIPTOR_TYPE _feature_type,const bool _useSobel,const int _resizeWidth,const int _windowSize,const int _L1_norm,const int _upper_bound)
     :CodeBook(_feature_type,_useSobel,_resizeWidth,_windowSize,_L1_norm),upper_bound(_upper_bound)
 {
@@ -537,6 +536,43 @@ HistogramCodes::~HistogramCodes()
 
 void HistogramCodes::GenerateSURFClusterData(const std::vector<const char*>& files)
 {
+  BaseFeature* feature = FeatureEngine(feature_type,useSobel,L1_norm);
+  features.Create(1000,feature->Length());
+  int added = 0;
+  const int hessian_thresh = 500;
+  const bool use128_surf = true;
+  const int window_offset = windowSize / 2;
+  int count = 0;
+  for(unsigned int imgindex=0; imgindex < files.size(); imgindex++)
+  {
+    IplImage* cv_img = cvLoadImage(files[imgindex], IPL_DEPTH_8U);
+
+    CvSeq* keys = 0;
+    CvSeq* descriptors = 0;
+    CvMemStorage* mem  = cvCreateMemStorage(0);
+    CvSURFParams params = cvSURFParams(hessian_thresh, use128_surf);
+    cvExtractSURF(cv_img, 0, &keys, &descriptors, mem, params);
+    // CvSeqReader key_reader;
+    // cvStartReadSeq(keys, &key_reader, 0);
+    CvSeqReader reader;
+    cvStartReadSeq(descriptors, &reader, 0);
+    features.AdjustCapacity(1+added+keys->total);
+    for (int j = 0; j < keys->total; ++j)
+    {
+      // const CvSURFPoint * key = (const CvSURFPoint*)(key_reader.ptr);
+      // CV_NEXT_SEQ_ELEM(key_reader.seq->elem_size, key_reader);
+      const float* p = (const float*)(reader.ptr);
+      CV_NEXT_SEQ_ELEM(reader.seq->elem_size, reader);
+
+      std::copy(p,p+feature->Length(),features.p[added]);
+      added++;
+    }
+    cvReleaseMemStorage(&mem);
+    cvReleaseImage(&cv_img);
+    cout << "Added image " << imgindex << endl;
+  }
+  features.AdjustCapacity(added);
+  delete feature; feature = NULL;
 }
 
 void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,const int stepSize)
@@ -546,7 +582,6 @@ void HistogramCodes::GenerateClusterData(const std::vector<const char*>& files,c
   int added = 0;
   for(unsigned int imgindex=0;imgindex<files.size();imgindex++)
   {
-    // cout << files[imgindex] << endl;
     const IntImage<double>& img = feature->AssignFile(files[imgindex],resizeWidth);
     int num_subwin = ((img.nrow-2)/stepSize+1) * ((img.ncol-2)/stepSize+1);
     if(added+num_subwin>features.nrow) features.AdjustCapacity(max(features.nrow*3/2,added+num_subwin));

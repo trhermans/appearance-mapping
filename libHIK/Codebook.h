@@ -83,6 +83,7 @@ class CodeBook
   IplImage* TranslateOneImage(const char* filename,const int K) const;
   // with an image already assigned to 'feature', find the right codeword for patch [x1..x2)X[y1..y2)
   virtual int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const = 0;
+  virtual int Find_Nearest(const float* d, BaseFeature* feature) const { return -1; }
 };
 
 class LinearCodes: public CodeBook
@@ -99,6 +100,7 @@ class LinearCodes: public CodeBook
   void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
+  int Find_Nearest(const float* d, BaseFeature* feature) const;
  public:
   void SetData(Array2d<double>& data);
   void SetData(Array2d<int>& data);
@@ -118,6 +120,7 @@ class HistogramCodes: public CodeBook
   void GenerateClusterData(const std::vector<const char*>& files,const int stepSize);
   int GenerateCodeWords(const int K,const bool oneclassSVM,const int maxiteration = 10);
   int Find_Nearest(const int x1,const int x2,const int y1,const int y2,BaseFeature* feature) const;
+  int Find_Nearest(const float* d, BaseFeature* feature) const { return -1; }
  public:
   void SetData(Array2d<int>& data);
 };
